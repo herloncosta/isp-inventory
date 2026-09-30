@@ -1,6 +1,7 @@
 node_modules
 dist
 generated
+apps/api/src/generated
 coverage
 *.log
 pnpm-lock.yaml
