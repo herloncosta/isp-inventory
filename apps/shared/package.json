@@ -6,9 +6,12 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "scripts": {
-    "build": "tsc --noEmit"
+    "build": "tsc --noEmit",
+    "lint": "prettier --check \"src/**/*.ts\"",
+    "lint:fix": "prettier --write \"src/**/*.ts\""
   },
   "devDependencies": {
+    "prettier": "^3.4.0",
     "typescript": "^5.9.0"
   }
 }

@@ -52,7 +52,9 @@ function StatCard({ label, value, alert }: { label: string; value: number; alert
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4">
       <p className="text-sm text-gray-500">{label}</p>
-      <p className={`text-2xl font-semibold ${alert ? 'text-red-600' : 'text-gray-900'}`}>{value}</p>
+      <p className={`text-2xl font-semibold ${alert ? 'text-red-600' : 'text-gray-900'}`}>
+        {value}
+      </p>
     </div>
   );
 }

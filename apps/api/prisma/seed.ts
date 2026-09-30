@@ -41,7 +41,9 @@ async function main() {
     },
   });
 
-  console.log('Seed concluído: admin@isp.com / estoquista@isp.com / tecnico@isp.com (senha: admin123)');
+  console.log(
+    'Seed concluído: admin@isp.com / estoquista@isp.com / tecnico@isp.com (senha: admin123)',
+  );
 }
 
 main()
