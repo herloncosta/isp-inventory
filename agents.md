@@ -156,8 +156,15 @@ Prover um sistema simples, performático e confiável para gerenciamento de insu
 
 ---
 
-## 8. Changelog
+## 8. Workflow Git
 
-| Data       | Mudança                                                                  |
-| ---------- | ------------------------------------------------------------------------ |
-| 2026-09-30 | Scaffold inicial do monorepo, schema Prisma, módulos base API e frontend |
+- Branches: `main` (estável) e `develop` (integração).
+- Toda feature parte de `develop`: desenvolver → implementar testes (Vitest) → validar (`prettier --check` + `pnpm --filter api test`) → merge `--no-ff` na `main` → push das duas branches.
+- Padrões de código: Prettier como formatador oficial; baixo acoplamento, alta coesão; preferir algoritmos O(n) com `Set`/`Map` em validações de unicidade e filtros de estoque.
+
+## 9. Changelog
+
+| Data       | Mudança                                                                                  |
+| ---------- | ---------------------------------------------------------------------------------------- |
+| 2026-09-30 | Scaffold inicial do monorepo, schema Prisma, módulos base API e frontend                 |
+| 2026-09-30 | Prettier padronizado (api/web/shared), Vitest com `stock.rules` testadas, repo remoto criado |
