@@ -27,6 +27,10 @@ model Product {
   unit      String
   minStock  Int      @default(0) @map("min_stock")
 
+  balances  StockBalance[]
+  movements StockMovement[]
+  serialItems SerialItem[]
+
   @@map("products")
 }
 
@@ -44,6 +48,8 @@ model Vehicle {
   plate String @unique
   model String
 
+  technicians Technician[]
+
   @@map("vehicles")
 }
 
@@ -52,6 +58,8 @@ model Technician {
   name     String
   userId   String  @unique @map("user_id")
   vehicleId String? @map("vehicle_id")
+
+  vehicle Vehicle? @relation(fields: [vehicleId], references: [id])
 
   @@map("technicians")
 }
@@ -62,6 +70,9 @@ model StockLocation {
   type              String
   responsibleUserId String? @map("responsible_user_id")
 
+  balances    StockBalance[]
+  serialItems SerialItem[]
+
   @@map("stock_locations")
 }
 
@@ -70,6 +81,9 @@ model StockBalance {
   locationId String @map("location_id")
   productId  String @map("product_id")
   quantity   Int    @default(0)
+
+  product  Product       @relation(fields: [productId], references: [id])
+  location StockLocation @relation(fields: [locationId], references: [id])
 
   @@unique([locationId, productId])
   @@map("stock_balances")
@@ -86,6 +100,8 @@ model StockMovement {
   createdBy       String    @map("created_by")
   createdAt       DateTime  @default(now()) @map("created_at")
 
+  product Product @relation(fields: [productId], references: [id])
+
   @@map("stock_movements")
 }
 
@@ -96,6 +112,9 @@ model SerialItem {
   macAddress      String? @unique @map("mac_address")
   currentLocationId String @map("current_location_id")
   status          String  @default("AVAILABLE")
+
+  product  Product       @relation(fields: [productId], references: [id])
+  location StockLocation @relation(fields: [currentLocationId], references: [id])
 
   @@map("serial_items")
 }

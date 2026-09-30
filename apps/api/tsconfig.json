@@ -3,11 +3,8 @@
   "compilerOptions": {
     "composite": true,
     "outDir": "./dist",
-    "rootDir": "./src",
-    "paths": {
-      "@isp/shared": ["../shared/src/index.ts"],
-      "@isp/shared/*": ["../shared/src/*"]
-    }
+    "rootDir": "./src"
   },
-  "include": ["src/**/*", "../shared/src/**/*"]
+  "include": ["src/**/*"],
+  "exclude": ["prisma", "**/*.spec.ts", "**/*.test.ts"]
 }

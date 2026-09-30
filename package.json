@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "description": "Sistema de Gestão e Controle de Estoque Telecom",
   "scripts": {
+    "predev": "pnpm --filter shared build",
     "dev": "pnpm --parallel --filter './apps/*' dev",
     "dev:api": "pnpm --filter api dev",
     "dev:web": "pnpm --filter web dev",
