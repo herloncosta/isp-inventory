@@ -8,3 +8,8 @@ generated
 coverage
 .turbo
 node-compile-cache
+*.tsbuildinfo
+apps/shared/src/**/*.js
+apps/shared/src/**/*.d.ts
+apps/shared/src/**/*.js.map
+apps/shared/src/**/*.d.ts.map
