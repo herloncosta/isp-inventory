@@ -10,7 +10,7 @@ import { RolesGuard } from '../../common/guards/roles.guard.js';
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET ?? 'dev-secret',
-      signOptions: { expiresIn: process.env.JWT_EXPIRES_IN ?? '7d' },
+      signOptions: { expiresIn: 7 * 24 * 60 * 60 },
     }),
   ],
   controllers: [AuthController],

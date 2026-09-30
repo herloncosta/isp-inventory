@@ -78,7 +78,6 @@ ln -s ../../.env apps/api/.env
 
 DATABASE_URL="postgresql://isp:isp_password@localhost:5432/isp_inventory?schema=public"
 JWT_SECRET="troque-em-producao"
-JWT_EXPIRES_IN="7d"
 PORT=3000
 ```
 

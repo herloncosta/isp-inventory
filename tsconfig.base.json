@@ -4,6 +4,9 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "strict": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strictPropertyInitialization": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
@@ -12,11 +15,7 @@
     "declarationMap": true,
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./",
-    "paths": {
-      "@isp/shared": ["apps/shared/src/index.ts"],
-      "@isp/shared/*": ["apps/shared/src/*"]
-    }
+    "baseUrl": "./"
   },
   "exclude": ["node_modules", "dist", "generated"]
 }

@@ -3,12 +3,7 @@
   "compilerOptions": {
     "composite": true,
     "jsx": "react-jsx",
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "paths": {
-      "@isp/shared": ["../shared/src/index.ts"],
-      "@isp/shared/*": ["../shared/src/*"]
-    }
+    "outDir": "./dist"
   },
-  "include": ["src/**/*", "../shared/src/**/*"]
+  "include": ["src/**/*"]
 }
