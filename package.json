@@ -13,10 +13,10 @@
     "lint:fix": "pnpm --parallel --filter './apps/*' lint:fix",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
-    "db:migrate": "pnpm --filter api prisma migrate dev",
-    "db:seed": "pnpm --filter api prisma db seed",
-    "db:studio": "pnpm --filter api prisma studio",
-    "postinstall": "pnpm --filter api prisma generate"
+    "db:migrate": "pnpm --filter api exec prisma migrate dev",
+    "db:seed": "pnpm --filter api exec prisma db seed",
+    "db:studio": "pnpm --filter api exec prisma studio",
+    "postinstall": "pnpm --filter api exec prisma generate"
   },
   "devDependencies": {
     "prettier": "^3.4.0",
