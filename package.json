@@ -17,7 +17,7 @@
     "db:migrate": "pnpm --filter api exec prisma migrate dev",
     "db:seed": "pnpm --filter api exec prisma db seed",
     "db:studio": "pnpm --filter api exec prisma studio",
-    "postinstall": "pnpm --filter api exec prisma generate"
+    "postinstall": "pnpm --filter api run prisma:generate"
   },
   "devDependencies": {
     "prettier": "^3.4.0",

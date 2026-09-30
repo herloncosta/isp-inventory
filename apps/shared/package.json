@@ -7,8 +7,8 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "lint": "prettier --check \"src/**/*.ts\"",
-    "lint:fix": "prettier --write \"src/**/*.ts\""
+    "lint": "prettier --check \"src/**/*.ts\" --ignore-path ../../.prettierignore",
+    "lint:fix": "prettier --write \"src/**/*.ts\" --ignore-path ../../.prettierignore"
   },
   "devDependencies": {
     "prettier": "^3.4.0",
