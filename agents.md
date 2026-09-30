@@ -164,7 +164,7 @@ Prover um sistema simples, performático e confiável para gerenciamento de insu
 
 ## 9. Changelog
 
-| Data       | Mudança                                                                                  |
-| ---------- | ---------------------------------------------------------------------------------------- |
-| 2026-09-30 | Scaffold inicial do monorepo, schema Prisma, módulos base API e frontend                 |
+| Data       | Mudança                                                                                      |
+| ---------- | -------------------------------------------------------------------------------------------- |
+| 2026-09-30 | Scaffold inicial do monorepo, schema Prisma, módulos base API e frontend                     |
 | 2026-09-30 | Prettier padronizado (api/web/shared), Vitest com `stock.rules` testadas, repo remoto criado |
