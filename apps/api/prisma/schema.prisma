@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("users")
+}
+
+model Product {
+  id        String   @id @default(uuid())
+  name      String
+  sku       String   @unique
+  category  String
+  technology String
+  unit      String
+  minStock  Int      @default(0) @map("min_stock")
+
+  @@map("products")
+}
+
+model Supplier {
+  id          String @id @default(uuid())
+  cnpj        String @unique
+  razaoSocial String @map("razao_social")
+  contato     String
+
+  @@map("suppliers")
+}
+
+model Vehicle {
+  id    String @id @default(uuid())
+  plate String @unique
+  model String
+
+  @@map("vehicles")
+}
+
+model Technician {
+  id       String  @id @default(uuid())
+  name     String
+  userId   String  @unique @map("user_id")
+  vehicleId String? @map("vehicle_id")
+
+  @@map("technicians")
+}
+
+model StockLocation {
+  id                String  @id @default(uuid())
+  name              String
+  type              String
+  responsibleUserId String? @map("responsible_user_id")
+
+  @@map("stock_locations")
+}
+
+model StockBalance {
+  id         String @id @default(uuid())
+  locationId String @map("location_id")
+  productId  String @map("product_id")
+  quantity   Int    @default(0)
+
+  @@unique([locationId, productId])
+  @@map("stock_balances")
+}
+
+model StockMovement {
+  id              String    @id @default(uuid())
+  sourceLocationId String?  @map("source_location_id")
+  targetLocationId String?  @map("target_location_id")
+  productId       String    @map("product_id")
+  quantity        Int
+  osNumber        String?   @map("os_number")
+  type            String
+  createdBy       String    @map("created_by")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  @@map("stock_movements")
+}
+
+model SerialItem {
+  id              String  @id @default(uuid())
+  productId       String  @map("product_id")
+  serialNumber     String  @unique @map("serial_number")
+  macAddress      String? @unique @map("mac_address")
+  currentLocationId String @map("current_location_id")
+  status          String  @default("AVAILABLE")
+
+  @@map("serial_items")
+}
