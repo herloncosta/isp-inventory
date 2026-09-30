@@ -10,15 +10,15 @@ export default function LoginPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    login.mutate(
-      { email, password },
-      { onSuccess: () => navigate('/') },
-    );
+    login.mutate({ email, password }, { onSuccess: () => navigate('/') });
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-sm w-full max-w-sm space-y-4">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white p-8 rounded-lg shadow-sm w-full max-w-sm space-y-4"
+      >
         <h1 className="text-xl font-semibold text-gray-900 text-center">ISP Inventory</h1>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
@@ -40,9 +40,7 @@ export default function LoginPage() {
             required
           />
         </div>
-        {login.isError && (
-          <p className="text-sm text-red-600">{login.error?.message}</p>
-        )}
+        {login.isError && <p className="text-sm text-red-600">{login.error?.message}</p>}
         <button
           type="submit"
           disabled={login.isPending}

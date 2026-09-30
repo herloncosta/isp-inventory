@@ -7,3 +7,4 @@ generated
 .DS_Store
 coverage
 .turbo
+node-compile-cache

@@ -31,7 +31,9 @@ export default function StockPage() {
           {data?.map((b) => (
             <tr key={b.id} className="border-b border-gray-100">
               <td className="px-4 py-2">{b.product.name}</td>
-              <td className="px-4 py-2">{b.quantity} {b.product.unit}</td>
+              <td className="px-4 py-2">
+                {b.quantity} {b.product.unit}
+              </td>
             </tr>
           ))}
         </tbody>

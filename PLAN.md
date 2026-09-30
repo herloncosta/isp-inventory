@@ -6,14 +6,14 @@ Sistema de gestão de estoque para ISPs de pequeno porte. Monorepo com NestJS (A
 
 ## Stack
 
-| Camada | Tecnologia |
-|---|---|
-| Monorepo | pnpm workspaces |
-| Backend | NestJS + TypeScript (ESM) |
-| ORM | Prisma 7.10.0 (prisma-client, driver adapter) |
-| Banco | PostgreSQL (Docker Compose) |
-| Frontend | React + Vite + TailwindCSS + React Query |
-| Auth | JWT + bcrypt |
+| Camada   | Tecnologia                                    |
+| -------- | --------------------------------------------- |
+| Monorepo | pnpm workspaces                               |
+| Backend  | NestJS + TypeScript (ESM)                     |
+| ORM      | Prisma 7.10.0 (prisma-client, driver adapter) |
+| Banco    | PostgreSQL (Docker Compose)                   |
+| Frontend | React + Vite + TailwindCSS + React Query      |
+| Auth     | JWT + bcrypt                                  |
 
 ## Estrutura
 
@@ -55,6 +55,7 @@ isp-inventory/
 ## Fases de Implementação
 
 ### Fase 1 — Scaffold Base
+
 - [ ] Root `package.json` com workspaces (pnpm)
 - [ ] `docker-compose.yml` com PostgreSQL
 - [ ] `tsconfig.base.json` compartilhado
@@ -63,6 +64,7 @@ isp-inventory/
 - [ ] `apps/web` — Vite + React + TailwindCSS + React Query
 
 ### Fase 2 — Auth & RBAC (RF-001, RF-002)
+
 - [ ] Migração: `Users` table
 - [ ] Módulo auth: login, JWT, bcrypt
 - [ ] Guards: `RolesGuard`, `JwtAuthGuard`
@@ -70,35 +72,41 @@ isp-inventory/
 - [ ] Seed: usuários admin/estoquista/tecnico
 
 ### Fase 3 — Cadastros Base (RF-003, RF-004, RF-005)
+
 - [ ] Migração: `Products`, `Technicians`, `Vehicles`, `Suppliers`
 - [ ] CRUD produtos com categoria/unidade/estoque mínimo
 - [ ] CRUD técnicos vinculados a veículos (StockLocations tipo VEHICLE)
 - [ ] CRUD fornecedores (CNPJ, razão social, contato)
 
 ### Fase 4 — Entradas & Compras (RF-006, RF-007, RF-008)
+
 - [ ] Migração: `StockMovements`, `SerialItems`
 - [ ] Entrada manual vinculada a fornecedor
 - [ ] Entrada em lote de seriais/MAC (RN-01: unicidade)
 - [ ] Entrada de insumos fracionados (metros)
 
 ### Fase 5 — Movimentação (RF-009, RF-010, RF-011)
+
 - [ ] Transferência Central → Veículo (RN-02: saldo negativo bloqueado)
 - [ ] Baixa em OS (técnico ou estoquista)
 - [ ] Devolução com status (Disponível/Defeito/Manutenção)
 - [ ] Transações atômicas com `prisma.$transaction`
 
 ### Fase 6 — Consultas & Alertas (RF-012, RF-013)
+
 - [ ] Dashboard: saldo por local em tempo real
 - [ ] Alerta de estoque mínimo (query + endpoint)
 - [ ] Filtros por local, produto, período
 
 ### Fase 7 — Frontend Core
+
 - [ ] Layout + roteamento (React Router)
 - [ ] Login + proteção de rotas por perfil
 - [ ] Dashboard com cards de saldo e alertas
 - [ ] Páginas: Produtos, Técnicos, Fornecedores, Estoque
 
 ### Fase 8 — Frontend Movimentações
+
 - [ ] Formulário de entrada (simples + lote de seriais)
 - [ ] Transferência entre locais
 - [ ] Baixa em OS
@@ -106,11 +114,11 @@ isp-inventory/
 
 ## Regras de Negócio
 
-| RN | Onde | Como |
-|---|---|---|
-| **RN-01** (serial/MAC único) | `SerialItems` | `@@unique([serialNumber])`, `@@unique([macAddress])` + validação no service |
-| **RN-02** (sem saldo negativo) | `StockService` | Transação: check saldo → debita source → credita target, tudo atômico |
-| **RN-03** (ferramentas rastreáveis) | `SerialItems` | Ferramentas de alto valor ganham `SerialItem` vinculado ao técnico |
+| RN                                  | Onde           | Como                                                                        |
+| ----------------------------------- | -------------- | --------------------------------------------------------------------------- |
+| **RN-01** (serial/MAC único)        | `SerialItems`  | `@@unique([serialNumber])`, `@@unique([macAddress])` + validação no service |
+| **RN-02** (sem saldo negativo)      | `StockService` | Transação: check saldo → debita source → credita target, tudo atômico       |
+| **RN-03** (ferramentas rastreáveis) | `SerialItems`  | Ferramentas de alto valor ganham `SerialItem` vinculado ao técnico          |
 
 ## Prisma 7 — Configuração
 

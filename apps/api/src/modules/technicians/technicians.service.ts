@@ -10,7 +10,10 @@ export class TechniciansService {
   }
 
   async findOne(id: string) {
-    const tech = await this.prisma.technician.findUnique({ where: { id }, include: { vehicle: true } });
+    const tech = await this.prisma.technician.findUnique({
+      where: { id },
+      include: { vehicle: true },
+    });
     if (!tech) throw new NotFoundException('Técnico não encontrado');
     return tech;
   }

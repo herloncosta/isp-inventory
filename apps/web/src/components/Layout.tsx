@@ -34,10 +34,7 @@ export default function Layout() {
         </div>
         <div className="flex items-center gap-3">
           <span className="text-sm text-gray-600">{user?.name}</span>
-          <button
-            onClick={logout}
-            className="text-sm text-red-600 hover:text-red-800"
-          >
+          <button onClick={logout} className="text-sm text-red-600 hover:text-red-800">
             Sair
           </button>
         </div>
