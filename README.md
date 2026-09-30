@@ -72,6 +72,10 @@ API em `http://localhost:3000` · Web em `http://localhost:5173`.
 Copie `.env.example` para `.env` e ajuste:
 
 ```bash
+cp .env.example .env
+# A API lê o .env a partir de apps/api — crie o link (necessário em clones frescos):
+ln -s ../../.env apps/api/.env
+
 DATABASE_URL="postgresql://isp:isp_password@localhost:5432/isp_inventory?schema=public"
 JWT_SECRET="troque-em-producao"
 JWT_EXPIRES_IN="7d"
