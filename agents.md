@@ -156,10 +156,17 @@ Prover um sistema simples, performático e confiável para gerenciamento de insu
 
 ---
 
-## 8. Workflow Git
+## 8. Fluxo Obrigatório de Desenvolvimento
+
+> **REGRA PERMANENTE** — este fluxo deve ser seguido em toda feature, sem exceções: **desenvolvimento → teste → validação → merge na main**. Refatorações ficam para o final do projeto.
+
+1. **Desenvolvimento** — implementar a feature na branch `develop` (nunca direto na `main`).
+2. **Teste** — implementar/atualizar testes Vitest cobrindo a nova lógica.
+3. **Validação** — `prettier --check` limpo + `pnpm --filter api test` verde.
+4. **Merge na main** — merge `--no-ff` da `develop` na `main` + push das duas branches.
+5. **Refatorações** — somente ao final do projeto, em tarefa dedicada.
 
 - Branches: `main` (estável) e `develop` (integração).
-- Toda feature parte de `develop`: desenvolver → implementar testes (Vitest) → validar (`prettier --check` + `pnpm --filter api test`) → merge `--no-ff` na `main` → push das duas branches.
 - Padrões de código: Prettier como formatador oficial; baixo acoplamento, alta coesão; preferir algoritmos O(n) com `Set`/`Map` em validações de unicidade e filtros de estoque.
 
 ## 9. Changelog
