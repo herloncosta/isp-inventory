@@ -1,41 +1,41 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
-import { SuppliersService } from './suppliers.service.js';
-import { CreateSupplierDto, UpdateSupplierDto } from './dto.js';
+import { VehiclesService } from './vehicles.service.js';
+import { CreateVehicleDto, UpdateVehicleDto } from './dto.js';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../../common/guards/roles.guard.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
 import { Role } from '@isp/shared';
 
-@Controller('suppliers')
+@Controller('vehicles')
 @UseGuards(JwtAuthGuard, RolesGuard)
-export class SuppliersController {
-  constructor(private suppliersService: SuppliersService) {}
+export class VehiclesController {
+  constructor(private vehiclesService: VehiclesService) {}
 
   @Get()
   findAll() {
-    return this.suppliersService.findAll();
+    return this.vehiclesService.findAll();
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.suppliersService.findOne(id);
+    return this.vehiclesService.findOne(id);
   }
 
   @Post()
   @Roles(Role.ADMIN, Role.ESTOQUISTA)
-  create(@Body() data: CreateSupplierDto) {
-    return this.suppliersService.create(data);
+  create(@Body() data: CreateVehicleDto) {
+    return this.vehiclesService.create(data);
   }
 
   @Patch(':id')
   @Roles(Role.ADMIN, Role.ESTOQUISTA)
-  update(@Param('id') id: string, @Body() data: UpdateSupplierDto) {
-    return this.suppliersService.update(id, data);
+  update(@Param('id') id: string, @Body() data: UpdateVehicleDto) {
+    return this.vehiclesService.update(id, data);
   }
 
   @Delete(':id')
   @Roles(Role.ADMIN)
   remove(@Param('id') id: string) {
-    return this.suppliersService.remove(id);
+    return this.vehiclesService.remove(id);
   }
 }

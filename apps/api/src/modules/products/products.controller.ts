@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { ProductsService } from './products.service.js';
+import { CreateProductDto, UpdateProductDto } from './dto.js';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../../common/guards/roles.guard.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
@@ -22,13 +23,13 @@ export class ProductsController {
 
   @Post()
   @Roles(Role.ADMIN, Role.ESTOQUISTA)
-  create(@Body() data: any) {
+  create(@Body() data: CreateProductDto) {
     return this.productsService.create(data);
   }
 
   @Patch(':id')
   @Roles(Role.ADMIN, Role.ESTOQUISTA)
-  update(@Param('id') id: string, @Body() data: any) {
+  update(@Param('id') id: string, @Body() data: UpdateProductDto) {
     return this.productsService.update(id, data);
   }
 
