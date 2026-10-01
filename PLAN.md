@@ -71,7 +71,7 @@ isp-inventory/
 - [x] Decorator `@Roles(Role.ADMIN, Role.ESTOQUISTA)`
 - [x] Seed: usuários admin/estoquista/tecnico
 - [x] Módulo users: CRUD mínimo ADMIN-only (provisionamento de contas)
-- [x] Security: access (15min) + refresh (7d) com rotação single-use, lista de revogação (`revoked_tokens`), guard valida `typ`/`jti`; frontend guarda tokens só em memória com retry via refresh
+- [x] Security: access em memória (15min) + refresh em cookie httpOnly/SameSite=Lax (7d, rotação single-use), lista de revogação (`revoked_tokens`), guard valida `typ`/`jti`; retry automático via refresh (sessão sobrevive ao reload)
 
 ### Fase 3 — Cadastros Base (RF-003, RF-004, RF-005)
 
