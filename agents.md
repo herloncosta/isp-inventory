@@ -147,6 +147,7 @@ Prover um sistema simples, performático e confiável para gerenciamento de insu
 - [x] Consultas: my-balances do técnico, filtros de movimentação, vínculo local↔veículo
 - [x] Módulo Dashboard (summary)
 - [x] Frontend base (Login, Dashboard, Products, Stock)
+- [x] Frontend cadastros (Técnicos, Fornecedores, Veículos, Locais, Usuários) + rotas por perfil
 - [x] Seed (3 usuários: admin/estoquista/tecnico)
 
 ### Pendente

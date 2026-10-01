@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '../lib/api';
+import { useAuth } from '../hooks/useAuth';
 
 interface StockBalance {
   id: string;
@@ -8,9 +9,11 @@ interface StockBalance {
 }
 
 export default function StockPage() {
+  const { user } = useAuth();
+  const endpoint = user?.role === 'TECNICO' ? '/stock/my-balances' : '/stock/balances';
   const { data, isLoading } = useQuery({
-    queryKey: ['stock-balances'],
-    queryFn: () => apiFetch<StockBalance[]>('/stock/balances'),
+    queryKey: ['stock-balances', endpoint],
+    queryFn: () => apiFetch<StockBalance[]>(endpoint),
   });
 
   if (isLoading) return <p className="text-gray-500">Carregando...</p>;
@@ -18,7 +21,9 @@ export default function StockPage() {
   return (
     <div className="bg-white rounded-lg border border-gray-200">
       <div className="p-4 border-b border-gray-200">
-        <h2 className="text-sm font-semibold text-gray-900">Saldo por Local</h2>
+        <h2 className="text-sm font-semibold text-gray-900">
+          {user?.role === 'TECNICO' ? 'Meu Carro' : 'Saldo por Local'}
+        </h2>
       </div>
       <table className="w-full text-sm">
         <thead>
