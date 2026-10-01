@@ -90,10 +90,10 @@ isp-inventory/
 
 ### Fase 5 — Movimentação (RF-009, RF-010, RF-011)
 
-- [ ] Transferência Central → Veículo (RN-02: saldo negativo bloqueado)
-- [ ] Baixa em OS (técnico ou estoquista)
-- [ ] Devolução com status (Disponível/Defeito/Manutenção)
-- [ ] Transações atômicas com `prisma.$transaction`
+- [x] Transferência Central → Veículo (`POST /stock/transfers`, RN-02, move seriais AVAILABLE)
+- [x] Baixa em OS (`POST /stock/issues`, serial vira IN_USE + osNumber)
+- [x] Devolução com status (`POST /stock/returns`, AVAILABLE/DEFECTIVE/MAINTENANCE, osNumber preservada)
+- [x] Transações atômicas com `prisma.$transaction`
 
 ### Fase 6 — Consultas & Alertas (RF-012, RF-013)
 
