@@ -57,4 +57,12 @@ describe('StockService.getMovements (filtros)', () => {
       }),
     );
   });
+
+  it('inclui o produto — a UI do histórico renderiza movement.product.name', async () => {
+    await makeService().getMovements();
+
+    expect(prismaMock.stockMovement.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ include: { product: true } }),
+    );
+  });
 });
