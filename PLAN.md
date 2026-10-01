@@ -82,10 +82,11 @@ isp-inventory/
 
 ### Fase 4 — Entradas & Compras (RF-006, RF-007, RF-008)
 
-- [ ] Migração: `StockMovements`, `SerialItems`
-- [ ] Entrada manual vinculada a fornecedor
-- [ ] Entrada em lote de seriais/MAC (RN-01: unicidade)
-- [ ] Entrada de insumos fracionados (metros)
+- [x] Migração: `StockMovements`, `SerialItems` (+ `supplier_id`, `revoked_tokens`)
+- [x] Módulo Locations (CENTRAL/VEHICLE) — pré-requisito das movimentações
+- [x] Entrada manual vinculada a fornecedor (`POST /stock/entries`)
+- [x] Entrada em lote de seriais/MAC (`POST /stock/entries/serial-batch`, fail-fast 409, RN-01)
+- [x] Entrada de insumos fracionados (`POST /stock/entries/fractional`, pacotes × metros)
 
 ### Fase 5 — Movimentação (RF-009, RF-010, RF-011)
 

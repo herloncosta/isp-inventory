@@ -40,6 +40,8 @@ model Supplier {
   razaoSocial String @map("razao_social")
   contato     String
 
+  movements StockMovement[]
+
   @@map("suppliers")
 }
 
@@ -99,8 +101,10 @@ model StockMovement {
   type            String
   createdBy       String    @map("created_by")
   createdAt       DateTime  @default(now()) @map("created_at")
+  supplierId      String?   @map("supplier_id")
 
   product Product @relation(fields: [productId], references: [id])
+  supplier Supplier? @relation(fields: [supplierId], references: [id])
 
   @@map("stock_movements")
 }
