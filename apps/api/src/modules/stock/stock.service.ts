@@ -44,6 +44,7 @@ export class StockService {
     quantity: number;
     osNumber?: string;
     type: string;
+    supplierId?: string;
     createdBy: string;
   }) {
     if (data.quantity <= 0) throw new BadRequestException('Quantidade deve ser positiva');
