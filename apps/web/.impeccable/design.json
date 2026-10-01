@@ -1,0 +1,202 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-01T21:54:10.594797Z",
+  "title": "Design System: ISP Inventory",
+  "extensions": {
+    "colorMeta": {
+      "azul-de-via": {
+        "role": "primary",
+        "displayName": "Azul de Via",
+        "canonical": "#1b4b8f",
+        "tonalRamp": ["#0d2650", "#143a6e", "#1b4b8f", "#3f6cad", "#b9cbe6", "#e9eff8"]
+      },
+      "papel-autocopiativo": {
+        "role": "neutral",
+        "displayName": "Papel Autocopiativo",
+        "canonical": "#f4f3ef",
+        "tonalRamp": ["#16181d", "#5d5f63", "#8b8d90", "#d8d5cc", "#f4f3ef", "#ffffff"]
+      },
+      "grafite": {
+        "role": "neutral",
+        "displayName": "Grafite",
+        "canonical": "#16181d",
+        "tonalRamp": ["#16181d", "#3a3d42", "#5d5f63", "#6a6c70", "#b9b5a8", "#d8d5cc"]
+      },
+      "vermelho-de-caneta": {
+        "role": "tertiary",
+        "displayName": "Vermelho de Caneta",
+        "canonical": "#b3261e",
+        "tonalRamp": ["#6d1611", "#b3261e", "#d4443c", "#e88b85", "#f6cfcb", "#fdf3f2"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Wordmark",
+        "purpose": "Nome do sistema e título de tela. Nuca maior que 18px: o talão não tem manchete."
+      },
+      "headline": {
+        "displayName": "A Número que Decide",
+        "purpose": "Saldo disponível do item no local e total de metros. Único número monumental do sistema."
+      },
+      "title": {
+        "displayName": "Cabeçalho de Seção",
+        "purpose": "Cabeçalho de seção e de coluna do ledger."
+      },
+      "body": {
+        "displayName": "Corpo",
+        "purpose": "Texto de apoio e células de texto do ledger. Máximo 75ch."
+      },
+      "label": {
+        "displayName": "Etiqueta",
+        "purpose": "Rótulo de campo e aba, sempre versalete condensado."
+      },
+      "medida": {
+        "displayName": "Medida",
+        "purpose": "Valor preenchido à mão e dado numérico: serial, MAC, SKU, CNPJ, placa, OS, quantidade, horário."
+      }
+    },
+    "shadows": [
+      {
+        "name": "levita",
+        "value": "0 1px 2px rgba(22, 24, 29, 0.08), 0 6px 14px -8px rgba(22, 24, 29, 0.22)",
+        "purpose": "Única sombra do sistema. Só na faixa fixa ao rolar e na via carbonada impressa."
+      }
+    ],
+    "motion": [
+      {
+        "name": "imprime-via",
+        "value": "280ms cubic-bezier(0.2, 0.8, 0.2, 1)",
+        "purpose": "clip-path inset da esquerda para a direita: a via carbonada se imprime ao confirmar. Único momento do produto; desligado sob prefers-reduced-motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Carimbo Primário",
+      "kind": "button",
+      "refersTo": "carimbo-primario",
+      "description": "A única ação primária da tela. Azul de via, versalete condensado, altura de 48px, sem raio de verdade (2px).",
+      "html": "<button class=\"stamp\">Registrar entrada</button>",
+      "css": ".stamp { display:inline-flex; min-height:48px; align-items:center; justify-content:center; padding:0 20px; border:2px solid var(--carbon); background:var(--carbon); color:var(--paper); font-size:0.875rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; font-stretch:80%; border-radius:2px; } .stamp:hover { background:var(--carbon-deep); border-color:var(--carbon-deep); } .stamp:disabled { background:#e7e4da; border-color:#e7e4da; color:var(--ink-70); }"
+    },
+    {
+      "name": "Carimbo Fantasma",
+      "kind": "button",
+      "refersTo": "carimbo-fantasma",
+      "description": "Ação secundária que abre e fecha um formulário (ex.: 'Novo registro'). Inverte para fundo grafite no hover.",
+      "html": "<button class=\"stamp-ghost\">Novo registro</button>",
+      "css": ".stamp-ghost { display:inline-flex; min-height:48px; align-items:center; padding:0 20px; border:2px solid var(--ink-70); background:transparent; color:var(--ink); font-size:0.875rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; font-stretch:80%; border-radius:2px; } .stamp-ghost:hover { background:var(--ink); border-color:var(--ink); color:var(--paper); }"
+    },
+    {
+      "name": "Campo Preenchido",
+      "kind": "input",
+      "refersTo": "campo",
+      "description": "Branco de preenchimento do talão: sem caixa, só a régua de 2px embaixo. Caret azul de via.",
+      "html": "<label class=\"label\" for=\"os\">OS / Cliente</label><input id=\"os\" class=\"field\" placeholder=\"OS-4471\" />",
+      "css": ".label { display:block; font-size:0.6875rem; font-weight:700; text-transform:uppercase; letter-spacing:0.14em; color:var(--ink-70); font-stretch:78%; } .field { width:100%; border:0; border-bottom:2px solid var(--rule-strong); background:transparent; padding:12px 0; font-family:'Azeret Mono',ui-monospace,monospace; font-size:1.125rem; font-variant-numeric:tabular-nums; color:var(--ink); caret-color:var(--carbon); } .field:focus { border-bottom-color:var(--carbon); }"
+    },
+    {
+      "name": "Selo de Estado",
+      "kind": "chip",
+      "refersTo": "selo",
+      "description": "Estado como marca impressa: quadrado, sem raio, com a palavra dentro. O tom é por opção — 'Disponível' nunca carimba vermelho.",
+      "html": "<div role=\"radiogroup\"><button class=\"seal\" role=\"radio\" aria-checked=\"false\" data-on=\"false\" data-tone=\"carbon\">Disponível</button><button class=\"seal\" role=\"radio\" aria-checked=\"true\" data-on=\"true\" data-tone=\"defeito\">Com defeito</button></div>",
+      "css": ".seal { display:inline-flex; min-height:36px; align-items:center; padding:0 12px; border:2px solid var(--rule-strong); color:var(--ink-70); font-size:0.6875rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; font-stretch:78%; } .seal[data-on=\"true\"] { background:var(--ink); border-color:var(--ink); color:var(--paper); } .seal[data-tone=\"defeito\"][data-on=\"true\"] { background:var(--red-carbon); border-color:var(--red-carbon); color:#fff; } .seal[data-tone=\"carbon\"][data-on=\"true\"] { background:var(--carbon); border-color:var(--carbon); color:#fff; }"
+    },
+    {
+      "name": "Via Carbonada",
+      "kind": "custom",
+      "description": "A duplicata que se imprime ao confirmar um lançamento. É o momento único do produto e o comprovante de auditoria.",
+      "html": "<div class=\"via\" role=\"status\"><p class=\"label text-carbon\">Via carbonada — registrada</p><dl><div class=\"flex items-baseline gap-3\"><dt class=\"label\">OS</dt><span class=\"leader\"></span><dd class=\"num\">OS-4471</dd></div></dl></div>",
+      "css": ".via { position:relative; border:1px solid var(--carbon); background:#fff; padding:12px 16px; box-shadow:var(--lift); animation:print-via 280ms cubic-bezier(0.2,0.8,0.2,1) both; } .via::before { content:''; position:absolute; inset-x:0; top:0; height:1px; background-image:linear-gradient(to right,var(--carbon) 0 4px,transparent 4px 10px); background-size:10px 1px; } .leader { height:1px; background-image:radial-gradient(circle,var(--rule-strong) 1px,transparent 1px); background-size:4px 1px; } @keyframes print-via { from{clip-path:inset(0 100% 0 0)} to{clip-path:inset(0 0 0 0)} } @media (prefers-reduced-motion:reduce){ .via{animation:none} }"
+    },
+    {
+      "name": "Faixa do Bloco de Título",
+      "kind": "nav",
+      "description": "Onde você está. Fixa no topo, com o nome do sistema, a tela atual e o índice do talão.",
+      "html": "<header class=\"band\"><div><span>ISP Inventory</span><span>Movimentações</span></div><nav><a class=\"active\">Movimentações</a></nav></header>",
+      "css": ".band { position:sticky; top:0; z-index:20; background:var(--paper); border-bottom:1px solid var(--ink); box-shadow:var(--lift); } .band a { border-bottom:2px solid transparent; padding:10px 12px; font-size:0.6875rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; color:var(--ink-70); } .band a.active { border-color:var(--carbon); color:var(--carbon); }"
+    },
+    {
+      "name": "Ledger",
+      "kind": "card",
+      "description": "Tabela de dados. Sem borda externa, sem raio, sem sombra; régua de 1px e algarismo tabular.",
+      "html": "<div class=\"ledger-wrap\"><table class=\"ledger\"><thead><tr><th>Produto</th><th class=\"text-right\">Qtd</th></tr></thead><tbody><tr><td>ONU FiberHome</td><td class=\"num text-right\">1</td></tr></tbody></table></div>",
+      "css": ".ledger-wrap { margin:0 -16px; padding:0 16px; overflow-x:auto; } .ledger { width:100%; min-width:34rem; font-size:0.875rem; } .ledger th { padding:8px 12px; text-align:left; font-size:0.6875rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; color:var(--ink-70); border-bottom:1px solid var(--ink); white-space:nowrap; } .ledger td { padding:12px; border-bottom:1px solid var(--rule); } .ledger tbody tr:hover { background:#e6e3d9; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "A via que viaja",
+    "overview": "O sistema é o talão de ordem de serviço carbonado que o técnico de campo já preenche à mão antes de existir este software. A folha inteira é o talão: o papel é o fundo da página e a estrutura aparece como régua impressa, vinco e perfuração — nunca como caixa flutuante com sombra. A densidade é de formulário de papel, não de painel de SaaS: rótulo em versalete condensado, valor preenchido em monoespaçado tabular, um único azul de carbono para toda ação e vermelho reservado a defeito. A régua que decide tudo é o uso real: de pé, ao lado do veículo, com uma mão só e sob sol forte.",
+    "keyCharacteristics": [
+      "A página é a folha; a divisão de seções é régua impressa, não caixa.",
+      "Um único azul (o carbono) carrega toda ação; vermelho é reservado a defeito e erro.",
+      "Rótulo em versalete condensado; medida em monoespaçado tabular.",
+      "Selo de estado é quadrado e sempre traz a palavra, nunca só a cor.",
+      "Um único momento animado no produto inteiro: a via se imprime."
+    ],
+    "rules": [
+      {
+        "name": "A Regra do Carbono",
+        "body": "O azul de via é a única cor de ação e ocupa no máximo um elemento por tela. A raridade é o ponto: se tudo é azul, nada é acionável.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra do Vermelho Reservado",
+        "body": "Vermelho só para defeito, erro e estoque no mínimo. Um item disponível nunca é vermelho.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra do Monoespaçado",
+        "body": "Monoespaçado é para dado, medida e identificador — serial, MAC, placa, SKU, CNPJ, OS, quantidade, horário. Nunca figurino, nunca rótulo.",
+        "section": "typography"
+      },
+      {
+        "name": "A Regra da Etiqueta",
+        "body": "Todo campo começa com um versalete condensado de 11px. O heading carrega o próprio peso; não existe kicker nem eyebrow acima dele.",
+        "section": "typography"
+      },
+      {
+        "name": "A Regra do Que Levita",
+        "body": "Superfície plana em repouso; sombra apenas onde o elemento se descola fisicamente do papel — a faixa fixa e a via. Cartão com sombra em repouso não existe.",
+        "section": "elevation"
+      },
+      {
+        "name": "A Regra da Honestidade do Saldo",
+        "body": "Se a consulta de saldo falhar, a tela diz que falhou. Afirmar 'saldo zerado' sobre um erro é mentira, e esta é a tela que promete honestidade de estado.",
+        "section": "components"
+      }
+    ],
+    "dos": [
+      "Do usar o versalete condensado de 11px para todo rótulo e toda aba.",
+      "Do manter fio de interface em 3:1 ou mais e texto em 4.5:1 ou mais contra o papel.",
+      "Do usar o azul de via em um único elemento por tela.",
+      "Do colocar o número que decide em 3rem com algarismo tabular, e nenhum outro número grande na tela.",
+      "Do marcar estado com selo que traz a palavra, não só a cor.",
+      "Do deixar a tabela rolar no celular em vez de espremer a coluna."
+    ],
+    "donts": [
+      "Don't criar card com sombra em repouso; a divisão é régua impressa.",
+      "Don't usar rounded-lg, cápsula ou círculo como forma de container.",
+      "Don't usar o azul de via em rótulo de texto corrido, nem o vermelho em item saudável.",
+      "Don't usar monoespaçado em rótulo ou em texto comum.",
+      "Don't adicionar um segundo momento animado; a via é o único.",
+      "Don't usar vidro, blur, gradiente ou borda lateral colorida de mais de 1px.",
+      "Don't esconder o saldo quando a consulta falha."
+    ]
+  }
+}

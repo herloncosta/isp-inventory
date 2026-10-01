@@ -32,6 +32,14 @@ describe('StockService.getMyBalances (RF-012)', () => {
     expect(result).toEqual([{ id: 'b1' }]);
   });
 
+  it('inclui produto e local — a tela de saldo mostra os dois nomes', async () => {
+    await makeService().getBalances();
+
+    expect(prismaMock.stockBalance.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ include: { product: true, location: true } }),
+    );
+  });
+
   it('lança 404 quando técnico não tem vínculo', async () => {
     prismaMock.technician.findUnique.mockResolvedValue({ id: 't1', vehicle: null });
     await expect(makeService().getMyBalances('u-tec')).rejects.toThrow(NotFoundException);

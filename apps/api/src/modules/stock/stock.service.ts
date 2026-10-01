@@ -8,7 +8,7 @@ export class StockService {
   async getBalances(locationId?: string) {
     return this.prisma.stockBalance.findMany({
       where: locationId ? { locationId } : undefined,
-      include: { product: true },
+      include: { product: true, location: true },
     });
   }
 

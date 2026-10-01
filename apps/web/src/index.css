@@ -1,3 +1,316 @@
+/*
+ * ISP Inventory — mundo visual "Talão de OS"
+ * A página inteira É o talão: o fundo é a folha autocopiativa e a estrutura
+ * aparece como régua impressa, não como card flutuante.
+ */
+
+@font-face {
+  font-family: 'Archivo';
+  src: url('/fonts/archivo-latin.woff2') format('woff2');
+  font-weight: 400 700;
+  font-stretch: 62% 125%;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Azeret Mono';
+  src: url('/fonts/azeret-mono-latin.woff2') format('woff2');
+  font-weight: 400 500;
+  font-style: normal;
+  font-display: swap;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    /* papel autocopiativo e tinta */
+    --paper: #f4f3ef;
+    --ink: #16181d;
+    --ink-70: #5d5f63;
+    /* cinza de apoio: 4.7:1 no papel — legível ao sol, ainda subordinado */
+    --ink-45: #6a6c70;
+    /* régua: 3.3:1, porque o fio some primeiro sob luz direta */
+    --rule: #d8d5cc;
+    --rule-strong: #8a8578;
+
+    /* azul carbono: única cor de ação */
+    --carbon: #1b4b8f;
+    --carbon-deep: #143a6e;
+    --carbon-wash: #e9eff8;
+    --carbon-edge: #b9cbe6;
+
+    /* vermelho carbono: defeito e nada mais */
+    --red-carbon: #b3261e;
+
+    /* papel levantado: superfície inativa (carimbo desabilitado) */
+    --papel-levantado: #e7e4da;
+    /* linha marcada: a linha do ledger sob o cursor da caneta */
+    --linha-marcada: #e6e3d9;
+
+    /* ritmo do formulário */
+    --rule-hairline: 1px;
+    --lift: 0 1px 2px rgba(22, 24, 29, 0.08), 0 6px 14px -8px rgba(22, 24, 29, 0.22);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--paper);
+    color: var(--ink);
+    font-family: 'Archivo', ui-sans-serif, system-ui, sans-serif;
+    font-stretch: 92%;
+    font-synthesis-weight: none;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* números são medidas: algarismo tabular em todo dado */
+  table,
+  input,
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* valor preenchido à mão */
+  .num,
+  .field,
+  .via {
+    font-family: 'Azeret Mono', ui-monospace, monospace;
+    font-variant-ligatures: none;
+  }
+
+  /* superfícies do navegador que ninguém desenha */
+  ::selection {
+    background: var(--carbon-wash);
+    color: var(--ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--carbon);
+    outline-offset: 2px;
+  }
+
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--paper);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--rule-strong);
+    border: 3px solid var(--paper);
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--ink-45);
+  }
+
+  summary {
+    cursor: pointer;
+  }
+}
+
+@layer components {
+  /* ---------- o talão ---------- */
+
+  /* rótulo impresso do formulário: condensado, versalete, entrelinhado */
+  .label {
+    @apply block text-[11px] font-bold uppercase tracking-[0.14em];
+    color: var(--ink-70);
+    font-stretch: 78%;
+  }
+
+  /* branco de preenchimento: só a régua de baixo, alvo grande */
+  .field {
+    @apply w-full border-0 border-b bg-transparent px-0 py-3 text-lg;
+    border-bottom: 2px solid var(--rule-strong);
+    color: var(--ink);
+    caret-color: var(--carbon);
+  }
+  .field::placeholder {
+    color: var(--ink-45);
+  }
+  .field:focus {
+    border-bottom-color: var(--carbon);
+  }
+  .field:disabled {
+    color: var(--ink-45);
+    border-bottom-style: dotted;
+  }
+
+  select.field {
+    @apply cursor-pointer appearance-none;
+    background-image:
+      linear-gradient(45deg, transparent 50%, var(--ink-70) 50%),
+      linear-gradient(135deg, var(--ink-70) 50%, transparent 50%);
+    background-position:
+      calc(100% - 15px) calc(50% + 2px),
+      calc(100% - 10px) calc(50% + 2px);
+    background-size:
+      5px 5px,
+      5px 5px;
+    background-repeat: no-repeat;
+    padding-right: 1.75rem;
+  }
+
+  /* guia pontilhada entre rótulo e valor */
+  .leader {
+    height: 1px;
+    background-image: radial-gradient(circle, var(--rule-strong) 1px, transparent 1px);
+    background-size: 4px 1px;
+    background-position: 0 center;
+  }
+
+  /* selo de estado: quadrado, com marca — nunca só cor */
+  .seal {
+    @apply inline-flex min-h-9 items-center gap-2 border-2 px-3 text-[11px] font-bold uppercase tracking-[0.1em];
+    border-color: var(--rule-strong);
+    color: var(--ink-70);
+    font-stretch: 78%;
+  }
+  .seal[data-on='true'] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper);
+  }
+  .seal[data-tone='defeito'][data-on='true'] {
+    background: var(--red-carbon);
+    border-color: var(--red-carbon);
+    color: #fff;
+  }
+  .seal[data-tone='carbon'][data-on='true'] {
+    background: var(--carbon);
+    border-color: var(--carbon);
+    color: #fff;
+  }
+
+  /* carimbo de ação: retângulo de formulário, sem raio */
+  .stamp {
+    @apply inline-flex min-h-12 items-center justify-center gap-2 border-2 px-5 text-sm font-bold uppercase tracking-[0.12em];
+    background: var(--carbon);
+    border-color: var(--carbon);
+    color: #fff;
+    font-stretch: 80%;
+  }
+  .stamp:hover {
+    background: var(--carbon-deep);
+    border-color: var(--carbon-deep);
+  }
+  .stamp:disabled {
+    background: var(--papel-levantado);
+    border-color: var(--papel-levantado);
+    color: var(--ink-70);
+  }
+  .stamp-ghost {
+    @apply inline-flex min-h-12 items-center justify-center gap-2 border-2 px-5 text-sm font-bold uppercase tracking-[0.12em];
+    background: transparent;
+    border-color: var(--ink-70);
+    color: var(--ink);
+    font-stretch: 80%;
+  }
+  .stamp-ghost:hover {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper);
+  }
+
+  /* faixa do bloco de título: onde você está, persistente */
+  .band {
+    @apply sticky top-0 z-20;
+    background: var(--paper);
+    /* régua de 1px: a aba ativa carimba os 2px do carbono por cima dela */
+    border-bottom: 1px solid var(--ink);
+    box-shadow: var(--lift);
+  }
+
+  /* régua impressa */
+  .rule-t {
+    border-top: 1px solid var(--rule);
+  }
+  .rule-b {
+    border-bottom: 1px solid var(--rule);
+  }
+
+  /* perfuração: separa o que é registro do que é registro permanente */
+  .perf {
+    height: 1px;
+    background-image: linear-gradient(to right, var(--rule-strong) 0 6px, transparent 6px 12px);
+    background-size: 12px 1px;
+  }
+
+  /* ---------- a via: o momento único ---------- */
+
+  /* a duplicata carbonada que se imprime ao confirmar */
+  .via {
+    @apply relative border px-4 py-3;
+    background: #fff;
+    border-color: var(--carbon);
+    box-shadow: var(--lift);
+    animation: print-via 280ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  .via::after {
+    content: '';
+    @apply absolute inset-x-0 bottom-0;
+    height: 1px;
+    background-image: linear-gradient(to right, var(--rule-strong) 0 4px, transparent 4px 10px);
+    background-size: 10px 1px;
+  }
+  .via::before {
+    content: '';
+    @apply absolute inset-x-0 top-0;
+    height: 1px;
+    background-image: linear-gradient(to right, var(--carbon) 0 4px, transparent 4px 10px);
+    background-size: 10px 1px;
+  }
+
+  /* a faixa de alerta: estoque mínimo é um aviso impresso, não um card */
+  .alert-band {
+    @apply border-2 px-4 py-3;
+    border-color: var(--red-carbon);
+    background: #fdf3f2;
+  }
+
+  /* ---------- o ledger ---------- */
+
+  .ledger-wrap {
+    @apply -mx-4 overflow-x-auto px-4 md:mx-0 md:px-0;
+  }
+  .ledger {
+    @apply w-full min-w-[34rem] text-sm;
+  }
+  .ledger th {
+    @apply px-3 py-2 text-left text-[11px] font-bold uppercase tracking-[0.12em];
+    color: var(--ink-70);
+    border-bottom: 1px solid var(--ink);
+    font-stretch: 78%;
+    white-space: nowrap;
+  }
+  .ledger td {
+    @apply px-3 py-3 align-top;
+    border-bottom: 1px solid var(--rule);
+  }
+  .ledger tbody tr:hover {
+    background: var(--linha-marcada);
+  }
+}
+
+@keyframes print-via {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .via {
+    animation: none;
+  }
+}

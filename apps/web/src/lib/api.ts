@@ -5,7 +5,11 @@ const baseUrl = import.meta.env.VITE_API_URL ?? API_BASE_URL;
 
 let refreshPromise: Promise<boolean> | null = null;
 
-function tryRefresh(): Promise<boolean> {
+/**
+ * Troca o refresh em cookie por um access em memória. Chamado no boot para a
+ * sessão sobreviver ao reload (o token de access nunca é persistido).
+ */
+export function restoreSession(): Promise<boolean> {
   refreshPromise ??= (async () => {
     try {
       const res = await fetch(`${baseUrl}/auth/refresh`, {
@@ -41,7 +45,7 @@ export async function apiFetch<T>(path: string, options?: RequestInit): Promise<
   const isAuthCall = path.startsWith('/auth/');
   let res = await request(path, getSession()?.accessToken, options);
 
-  if (res.status === 401 && !isAuthCall && (await tryRefresh())) {
+  if (res.status === 401 && !isAuthCall && (await restoreSession())) {
     res = await request(path, getSession()?.accessToken, options);
   }
 

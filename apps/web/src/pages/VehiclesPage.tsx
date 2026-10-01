@@ -7,7 +7,7 @@ export default function VehiclesPage() {
       queryKey="vehicles"
       endpoint="/vehicles"
       columns={[
-        { key: 'plate', label: 'Placa' },
+        { key: 'plate', label: 'Placa', num: true },
         { key: 'model', label: 'Modelo' },
       ]}
       fields={[

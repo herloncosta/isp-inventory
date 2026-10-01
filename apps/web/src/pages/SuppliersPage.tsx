@@ -8,7 +8,7 @@ export default function SuppliersPage() {
       endpoint="/suppliers"
       columns={[
         { key: 'razaoSocial', label: 'Razão Social' },
-        { key: 'cnpj', label: 'CNPJ' },
+        { key: 'cnpj', label: 'CNPJ', num: true },
         { key: 'contato', label: 'Contato' },
       ]}
       fields={[
