@@ -59,6 +59,12 @@ spacing:
   bloco: '32px'
   linha: '48px'
 components:
+  capa-talhao:
+    backgroundColor: '{colors.azul-de-via}'
+    textColor: '{colors.papel-autocopiativo}'
+    rounded: '{rounded.form}'
+    padding: '36px 40px'
+    width: '60%'
   carimbo-primario:
     backgroundColor: '{colors.azul-de-via}'
     textColor: '{colors.papel-autocopiativo}'
@@ -223,6 +229,22 @@ A borda é o instrumento principal: campo preenchido tem só a régua de 2px emb
 - **Select:** seta desenhada à mão (dois `linear-gradient` de 5px) com `appearance: none`, para não haver duas setas.
 - **Erro / desabilitado:** desabilitado usa borda pontilhada e grafite 45; o carimbo desabilitado usa papel levantado com texto em grafite 70 (5:1).
 - **Todo campo tem o mesmo corpo de texto** (`1.125rem`, o papel Medida), inclusive a textarea de seriais: no dedo, com luva, um campo não pode ser menor que os outros.
+
+### Marca e capa do login
+
+A marca é um SVG autoral: a gota de fibra descendo até o equipamento, em traço
+único (2 unidades em viewBox 32), sem preenchimento de formato. Legível de 24px
+a 40px e usada em três lugares: o canto superior esquerdo da capa, a faixa do
+app ao lado do nome, e o topo do formulário no celular. É uma marca provisória
+do produto — quando existir logo da empresa, ela substitui esta em todos os usos.
+
+A tela de login é a capa do talão partida em **60/40**: à esquerda, a folha
+carbonada (fundo azul de via) com o desenho técnico da rede impresso em traço de
+1.25px com `vector-effect: non-scaling-stroke` — poste, cabo de drop assentando
+no beiral, casa com o equipamento na parede, trena em metros e etiqueta de
+patrimônio; à direita, o formulário centrado nas duas direções sobre o papel.
+A capa some abaixo de `md` e a marca sobe para o topo do formulário: no celular
+não há espaço para duas folhas.
 
 ### Via carbonada
 

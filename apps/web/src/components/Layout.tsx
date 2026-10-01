@@ -1,6 +1,7 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Role } from '@isp/shared';
 import { useAuth } from '../hooks/useAuth';
+import BrandMark from './BrandMark';
 
 const STAFF = [Role.ADMIN, Role.ESTOQUISTA];
 
@@ -30,7 +31,8 @@ export default function Layout() {
     <div className="min-h-screen">
       <header className="band">
         <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-1 px-4 pt-2.5 md:px-6">
-          <Link to="/" className="flex items-baseline gap-2.5">
+          <Link to="/" className="flex items-center gap-2">
+            <BrandMark className="h-5 w-5 text-carbon" />
             <span className="whitespace-nowrap text-lg font-bold uppercase tracking-[0.2em] text-ink">
               ISP Inventory
             </span>
