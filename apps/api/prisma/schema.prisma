@@ -123,6 +123,7 @@ model SerialItem {
   macAddress      String? @unique @map("mac_address")
   currentLocationId String @map("current_location_id")
   status          String  @default("AVAILABLE")
+  osNumber        String? @map("os_number")
 
   product  Product       @relation(fields: [productId], references: [id])
   location StockLocation @relation(fields: [currentLocationId], references: [id])

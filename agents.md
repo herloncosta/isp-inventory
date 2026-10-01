@@ -143,6 +143,7 @@ Prover um sistema simples, performático e confiável para gerenciamento de insu
 - [x] Módulo Suppliers (CRUD)
 - [x] Módulo Stock (balances, movements, serials)
 - [x] Módulo Locations + Entries (manual, lote de seriais, fracionada)
+- [x] Módulo Movements (transfers, issues em OS, returns com condição)
 - [x] Módulo Dashboard (summary)
 - [x] Frontend base (Login, Dashboard, Products, Stock)
 - [x] Seed (3 usuários: admin/estoquista/tecnico)
