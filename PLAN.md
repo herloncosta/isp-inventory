@@ -97,8 +97,10 @@ isp-inventory/
 
 ### Fase 6 — Consultas & Alertas (RF-012, RF-013)
 
-- [ ] Dashboard: saldo por local em tempo real
-- [ ] Alerta de estoque mínimo (query + endpoint)
+- [x] Dashboard: saldo por local em tempo real (`GET /dashboard`, `GET /stock/balances`)
+- [x] Alerta de estoque mínimo (query + endpoint, `lowStock` no dashboard)
+- [x] Vínculo local↔veículo (`vehicleId` em StockLocation) + `GET /stock/my-balances` (técnico vê próprio carro)
+- [x] Filtros em movimentações: `type`, `from`, `to` + índice em `created_at` (RNF-004)
 - [ ] Filtros por local, produto, período
 
 ### Fase 7 — Frontend Core

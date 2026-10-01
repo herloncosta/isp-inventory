@@ -21,8 +21,17 @@ export class StockController {
     @Query('locationId') locationId?: string,
     @Query('productId') productId?: string,
     @Query('osNumber') osNumber?: string,
+    @Query('type') type?: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
   ) {
-    return this.stockService.getMovements({ locationId, productId, osNumber });
+    return this.stockService.getMovements({ locationId, productId, osNumber, type, from, to });
+  }
+
+  @Get('my-balances')
+  @Roles(Role.ADMIN, Role.ESTOQUISTA, Role.TECNICO)
+  getMyBalances(@CurrentUser('sub') userId: string) {
+    return this.stockService.getMyBalances(userId);
   }
 
   @Get('serials')
