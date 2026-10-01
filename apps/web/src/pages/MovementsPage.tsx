@@ -141,7 +141,7 @@ export default function MovementsPage() {
       )}
       {tab === 'baixa' && <IssueForm products={products ?? []} locations={locations ?? []} />}
       {tab === 'devolucao' && <ReturnForm products={products ?? []} locations={locations ?? []} />}
-      {tab === 'historico' && <HistoryList />}
+      {tab === 'historico' && <HistoryList products={products ?? []} locations={locations ?? []} />}
     </div>
   );
 }
@@ -490,18 +490,24 @@ function ReturnForm({ products, locations }: { products: Option[]; locations: Op
   );
 }
 
-function HistoryList() {
+function HistoryList({ products, locations }: { products: Option[]; locations: Option[] }) {
   const [type, setType] = useState('');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
+  const [productId, setProductId] = useState('');
+  const [locationId, setLocationId] = useState('');
+  const [osNumber, setOsNumber] = useState('');
   const params = new URLSearchParams({
     ...(type ? { type } : {}),
     ...(from ? { from } : {}),
     ...(to ? { to } : {}),
+    ...(productId ? { productId } : {}),
+    ...(locationId ? { locationId } : {}),
+    ...(osNumber.trim() ? { osNumber: osNumber.trim() } : {}),
   });
   const qs = params.toString();
   const { data, isLoading } = useQuery({
-    queryKey: ['movements', type, from, to],
+    queryKey: ['movements', type, from, to, productId, locationId, osNumber],
     queryFn: () => apiFetch<Movement[]>(`/stock/movements${qs ? `?${qs}` : ''}`),
   });
 
@@ -517,6 +523,29 @@ function HistoryList() {
             <option value="BAIXA_OS">Baixa em OS</option>
             <option value="DEVOLUCAO">Devolução</option>
           </select>
+        </div>
+        <Select
+          label="Produto"
+          value={productId}
+          onChange={setProductId}
+          options={products}
+          placeholder="Todos"
+        />
+        <Select
+          label="Local (origem ou destino)"
+          value={locationId}
+          onChange={setLocationId}
+          options={locations}
+          placeholder="Todos"
+        />
+        <div>
+          <label className={labelCls}>OS / Cliente</label>
+          <input
+            value={osNumber}
+            onChange={(e) => setOsNumber(e.target.value)}
+            placeholder="Filtrar por OS"
+            className={inputCls}
+          />
         </div>
         <div>
           <label className={labelCls}>De</label>
