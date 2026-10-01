@@ -7,6 +7,11 @@ const STAFF = [Role.ADMIN, Role.ESTOQUISTA];
 const navItems: { path: string; label: string; roles: string[] }[] = [
   { path: '/', label: 'Dashboard', roles: [Role.ADMIN, Role.ESTOQUISTA, Role.TECNICO] },
   { path: '/stock', label: 'Estoque', roles: [Role.ADMIN, Role.ESTOQUISTA, Role.TECNICO] },
+  {
+    path: '/movements',
+    label: 'Movimentações',
+    roles: [Role.ADMIN, Role.ESTOQUISTA, Role.TECNICO],
+  },
   { path: '/products', label: 'Produtos', roles: STAFF },
   { path: '/technicians', label: 'Técnicos', roles: STAFF },
   { path: '/suppliers', label: 'Fornecedores', roles: STAFF },
