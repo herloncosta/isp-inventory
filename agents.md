@@ -149,17 +149,18 @@ Prover um sistema simples, performático e confiável para gerenciamento de insu
 - [x] Frontend base (Login, Dashboard, Products, Stock)
 - [x] Frontend cadastros (Técnicos, Fornecedores, Veículos, Locais, Usuários) + rotas por perfil
 - [x] Seed (3 usuários: admin/estoquista/tecnico)
+- [x] Frontend movimentações (MovementsPage: entrada simples/lote de seriais/fracionada, transferência, baixa em OS, devolução com status, histórico)
+- [x] RF-007: Entrada em lote de seriais/MAC (API + UI)
+- [x] RF-008: Entrada de insumos fracionados (API + UI)
+- [x] RF-009: Transferência Central → Veículo (API + UI)
+- [x] RF-010: Baixa em OS (API + UI)
+- [x] RF-011: Devolução com status (API + UI)
+- [x] RF-012: Filtros avançados no dashboard/histórico (tipo, local, produto, OS, período)
+- [x] CI (GitHub Actions: prettier + testes API + build web)
 
 ### Pendente
 
-- [ ] RF-007: Entrada em lote de seriais/MAC
-- [ ] RF-008: Entrada de insumos fracionados (metros)
-- [ ] RF-009: Transferência Central → Veículo (UI)
-- [ ] RF-010: Baixa em OS (UI)
-- [ ] RF-011: Devolução com status (UI)
-- [ ] RF-012: Filtros avançados no dashboard
-- [ ] Testes unitários e e2e
-- [ ] CI/CD
+- [ ] Testes e2e
 
 ---
 
