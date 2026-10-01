@@ -1,4 +1,4 @@
-import type { Option } from '../../types';
+import type { Option } from '../options';
 
 export type Tab = 'entrada' | 'transferencia' | 'baixa' | 'devolucao' | 'historico';
 

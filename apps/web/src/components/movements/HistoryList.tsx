@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { MOVEMENT_LABELS } from '@isp/shared';
 import { apiFetch } from '../../lib/api';
 import type { Movement } from '../../features/movements/types';
-import type { Option } from '../../types';
+import type { Option } from '../../features/options';
 import ErrorNote from '../form/ErrorNote';
 import Field from '../form/Field';
 import SelectField from '../form/SelectField';

@@ -1,4 +1,4 @@
-import type { Option } from '../../types';
+import type { Option } from '../../features/options';
 import Field from './Field';
 
 interface SelectFieldProps {
