@@ -1,4 +1,4 @@
-import { Role } from '@isp/shared';
+import { Role, ROLE_LABELS } from '@isp/shared';
 import CrudPage from '../components/CrudPage';
 
 export default function UsersPage() {
@@ -9,8 +9,8 @@ export default function UsersPage() {
       endpoint="/users"
       columns={[
         { key: 'name', label: 'Nome' },
-        { key: 'email', label: 'E-mail' },
-        { key: 'role', label: 'Perfil' },
+        { key: 'email', label: 'E-mail', num: true },
+        { key: 'role', label: 'Perfil', values: ROLE_LABELS },
       ]}
       fields={[
         { key: 'name', label: 'Nome', type: 'text', required: true },
@@ -21,6 +21,7 @@ export default function UsersPage() {
           label: 'Perfil',
           type: 'select',
           options: Object.values(Role),
+          values: ROLE_LABELS,
           required: true,
         },
       ]}

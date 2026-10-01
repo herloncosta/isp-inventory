@@ -14,41 +14,81 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-8 rounded-lg shadow-sm w-full max-w-sm space-y-4"
-      >
-        <h1 className="text-xl font-semibold text-gray-900 text-center">ISP Inventory</h1>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-            required
-          />
+    <div className="min-h-screen px-4 py-10 md:py-16">
+      <div className="mx-auto w-full max-w-md">
+        <div className="rule-b pb-4">
+          <h1 className="text-xl font-bold uppercase tracking-[0.2em] text-ink">ISP Inventory</h1>
+          <p className="mt-1 text-sm leading-snug text-ink-70">
+            Controle de estoque e rastreio de material. Entre com a conta do seu perfil.
+          </p>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Senha</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-            required
-          />
+
+        <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+          <div>
+            <label htmlFor="email" className="label">
+              E-mail
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="username"
+              required
+              className="field"
+              placeholder="tecnico@isp.com"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="senha" className="label">
+              Senha
+            </label>
+            <input
+              id="senha"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+              required
+              className="field"
+            />
+          </div>
+
+          {login.isError && (
+            <p className="border-l-2 border-red-carbon pl-3 text-sm text-red-carbon">
+              {login.error?.message}
+            </p>
+          )}
+
+          <button type="submit" disabled={login.isPending} className="stamp w-full">
+            {login.isPending ? 'Entrando...' : 'Entrar'}
+          </button>
+        </form>
+
+        <div className="mt-8 border-t border-rule pt-3">
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-ink-45">
+            Perfis de acesso
+          </p>
+          <ul className="mt-2 space-y-1.5 text-sm text-ink-70">
+            <li className="flex items-baseline gap-3">
+              <span className="w-28 shrink-0 text-ink">Administrador</span>
+              <span className="leader flex-1" />
+              <span>cadastros e contas</span>
+            </li>
+            <li className="flex items-baseline gap-3">
+              <span className="w-28 shrink-0 text-ink">Estoquista</span>
+              <span className="leader flex-1" />
+              <span>entradas e transferências</span>
+            </li>
+            <li className="flex items-baseline gap-3">
+              <span className="w-28 shrink-0 text-ink">Técnico</span>
+              <span className="leader flex-1" />
+              <span>baixa e devolução no carro</span>
+            </li>
+          </ul>
         </div>
-        {login.isError && <p className="text-sm text-red-600">{login.error?.message}</p>}
-        <button
-          type="submit"
-          disabled={login.isPending}
-          className="w-full bg-blue-600 text-white py-2 rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
-        >
-          {login.isPending ? 'Entrando...' : 'Entrar'}
-        </button>
-      </form>
+      </div>
     </div>
   );
 }

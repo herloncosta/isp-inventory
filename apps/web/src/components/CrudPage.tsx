@@ -4,12 +4,20 @@ import { useCreate, useList } from '../hooks/useCrud';
 export interface Column {
   key: string;
   label: string;
+  /** algarismo tabular para dado medido ou identificador (SKU, CNPJ, placa) */
+  num?: boolean;
+  /** rótulos amigáveis para valores de enum (ex.: CATEGORY_LABELS) */
+  values?: Record<string, string>;
 }
 
-export interface Field extends Column {
+export interface Field extends Omit<Column, 'values'> {
   type: 'text' | 'number' | 'select';
   options?: string[];
+  values?: Record<string, string>;
   required?: boolean;
+  hint?: string;
+  /** popula o select a partir de um endpoint existente, em vez de pedir UUID colado */
+  optionsFrom?: { queryKey: string; endpoint: string };
 }
 
 interface CrudPageProps {
@@ -27,11 +35,50 @@ function get(obj: unknown, path: string): unknown {
   }, obj);
 }
 
+function display(value: unknown, values?: Record<string, string>): string {
+  if (value === null || value === undefined || value === '') return '—';
+  const raw = String(value);
+  return values?.[raw] ?? raw;
+}
+
+function RemoteSelect({
+  source,
+  value,
+  onChange,
+  required,
+}: {
+  source: { queryKey: string; endpoint: string };
+  value: string;
+  onChange: (v: string) => void;
+  required?: boolean;
+}) {
+  const { data } = useList<{ id: string; name?: string; plate?: string }>(
+    source.queryKey,
+    source.endpoint,
+  );
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      required={required}
+      className="field"
+    >
+      <option value="">Selecione</option>
+      {data?.map((o) => (
+        <option key={o.id} value={o.id}>
+          {o.name ?? o.plate ?? o.id}
+        </option>
+      ))}
+    </select>
+  );
+}
+
 export default function CrudPage({ title, queryKey, endpoint, columns, fields }: CrudPageProps) {
-  const { data, isLoading } = useList<Record<string, unknown>>(queryKey, endpoint);
+  const { data, isLoading, error } = useList<Record<string, unknown>>(queryKey, endpoint);
   const create = useCreate(queryKey, endpoint);
   const [form, setForm] = useState<Record<string, string>>({});
   const [open, setOpen] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,96 +92,123 @@ export default function CrudPage({ title, queryKey, endpoint, columns, fields }:
       onSuccess: () => {
         setForm({});
         setOpen(false);
+        setSaved(true);
       },
     });
   };
 
   return (
-    <div className="space-y-4">
-      <div className="bg-white rounded-lg border border-gray-200">
-        <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-gray-900">{title}</h2>
-          <button
-            onClick={() => setOpen((v) => !v)}
-            className="text-sm font-medium text-blue-600 hover:text-blue-800"
-          >
-            {open ? 'Fechar' : 'Novo'}
-          </button>
-        </div>
-        {open && (
-          <form
-            onSubmit={submit}
-            className="p-4 border-b border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-3"
-          >
-            {fields.map((f) => (
-              <div key={f.key}>
-                <label className="block text-xs font-medium text-gray-600 mb-1">{f.label}</label>
-                {f.type === 'select' ? (
+    <div className="mx-auto max-w-5xl">
+      <div className="rule-b flex flex-wrap items-end justify-between gap-3 pb-3">
+        <h1 className="text-lg font-bold uppercase tracking-[0.16em] text-ink">{title}</h1>
+        <button
+          onClick={() => {
+            setOpen((v) => !v);
+            setSaved(false);
+          }}
+          className="stamp-ghost"
+          aria-expanded={open}
+        >
+          {open ? 'Fechar' : 'Novo registro'}
+        </button>
+      </div>
+
+      {open && (
+        <form onSubmit={submit} className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {fields.map((f) => (
+            <div key={f.key}>
+              <label className="label">{f.label}</label>
+              {f.type === 'select' ? (
+                f.optionsFrom ? (
+                  <RemoteSelect
+                    source={f.optionsFrom}
+                    value={form[f.key] ?? ''}
+                    onChange={(v) => setForm({ ...form, [f.key]: v })}
+                    required={f.required}
+                  />
+                ) : (
                   <select
                     value={form[f.key] ?? ''}
                     onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
                     required={f.required}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                    className="field"
                   >
                     <option value="">Selecione</option>
                     {f.options?.map((o) => (
                       <option key={o} value={o}>
-                        {o}
+                        {f.values?.[o] ?? o}
                       </option>
                     ))}
                   </select>
-                ) : (
-                  <input
-                    type={f.type}
-                    value={form[f.key] ?? ''}
-                    onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
-                    required={f.required}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-                  />
-                )}
-              </div>
-            ))}
-            <div className="md:col-span-3">
-              {create.isError && (
-                <p className="text-sm text-red-600 mb-2">{create.error?.message}</p>
+                )
+              ) : (
+                <input
+                  type={f.type}
+                  value={form[f.key] ?? ''}
+                  onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
+                  required={f.required}
+                  className="field"
+                />
               )}
-              <button
-                type="submit"
-                disabled={create.isPending}
-                className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
-              >
-                {create.isPending ? 'Salvando...' : 'Salvar'}
-              </button>
+              {f.hint && <p className="mt-1 text-[11px] leading-snug text-ink-45">{f.hint}</p>}
             </div>
-          </form>
-        )}
-        {isLoading ? (
-          <p className="p-4 text-sm text-gray-500">Carregando...</p>
-        ) : (
-          <table className="w-full text-sm">
+          ))}
+
+          <div className="flex flex-wrap items-center gap-4 sm:col-span-2 lg:col-span-3">
+            <button type="submit" disabled={create.isPending} className="stamp">
+              {create.isPending ? 'Salvando...' : 'Registrar'}
+            </button>
+            {create.isError && (
+              <p className="border-l-2 border-red-carbon pl-3 text-sm text-red-carbon">
+                {create.error?.message} Confira os campos e tente de novo.
+              </p>
+            )}
+          </div>
+        </form>
+      )}
+
+      {saved && (
+        <p className="mt-4 text-sm text-carbon">
+          Registro salvo. A via do novo item já consta no histórico de movimentações.
+        </p>
+      )}
+
+      <div className="perf mt-6" />
+
+      {isLoading ? (
+        <p className="py-6 text-sm text-ink-70">Carregando...</p>
+      ) : error ? (
+        <p className="border-l-2 border-red-carbon py-2 pl-3 text-sm text-red-carbon">
+          {(error as Error).message} Recarregue a página para tentar de novo.
+        </p>
+      ) : !data || data.length === 0 ? (
+        <p className="py-8 text-sm text-ink-70">
+          Nenhum registro em {title} ainda. Use “Novo registro” para o primeiro.
+        </p>
+      ) : (
+        <div className="ledger-wrap">
+          <table className="ledger">
             <thead>
-              <tr className="border-b border-gray-200 text-left text-gray-500">
+              <tr>
                 {columns.map((c) => (
-                  <th key={c.key} className="px-4 py-2 font-medium">
-                    {c.label}
-                  </th>
+                  <th key={c.key}>{c.label}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {data?.map((row) => (
-                <tr key={String(row.id)} className="border-b border-gray-100">
+              {data.map((row) => (
+                <tr key={String(row.id)}>
                   {columns.map((c) => (
-                    <td key={c.key} className="px-4 py-2">
-                      {String(get(row, c.key) ?? '—')}
+                    <td key={c.key} className={c.num ? 'num' : undefined}>
+                      {display(get(row, c.key), c.values)}
                     </td>
                   ))}
                 </tr>
               ))}
             </tbody>
           </table>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

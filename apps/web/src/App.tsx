@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Role } from '@isp/shared';
+import { restoreSession } from './lib/api';
 import { useAuth } from './hooks/useAuth';
 import RequireRole from './components/RequireRole';
 import LoginPage from './pages/LoginPage';
@@ -18,6 +20,13 @@ const STAFF = [Role.ADMIN, Role.ESTOQUISTA];
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { token } = useAuth();
+  const [checked, setChecked] = useState(false);
+
+  useEffect(() => {
+    restoreSession().finally(() => setChecked(true));
+  }, []);
+
+  if (!checked) return <p className="p-6 text-sm text-ink-70">Verificando sessão...</p>;
   if (!token) return <Navigate to="/login" replace />;
   return <>{children}</>;
 }

@@ -8,13 +8,24 @@ export default function TechniciansPage() {
       endpoint="/technicians"
       columns={[
         { key: 'name', label: 'Nome' },
-        { key: 'userId', label: 'ID Usuário' },
-        { key: 'vehicle.plate', label: 'Veículo' },
+        { key: 'vehicle.plate', label: 'Veículo', num: true },
       ]}
       fields={[
         { key: 'name', label: 'Nome', type: 'text', required: true },
-        { key: 'userId', label: 'ID do Usuário', type: 'text', required: true },
-        { key: 'vehicleId', label: 'ID do Veículo (opcional)', type: 'text' },
+        {
+          key: 'userId',
+          label: 'Conta de usuário',
+          type: 'select',
+          optionsFrom: { queryKey: 'users', endpoint: '/users' },
+          required: true,
+        },
+        {
+          key: 'vehicleId',
+          label: 'Veículo (almoxarifado móvel)',
+          hint: 'Sem veículo, o técnico não consegue ver saldo nem registrar movimentação.',
+          type: 'select',
+          optionsFrom: { queryKey: 'vehicles', endpoint: '/vehicles' },
+        },
       ]}
     />
   );
