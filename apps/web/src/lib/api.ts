@@ -1,16 +1,30 @@
 import { API_BASE_URL } from '@isp/shared';
-import { clearSession, getSession, setSession } from './auth-store';
+import { clearSession, setSession } from './auth-store';
 
 const baseUrl = import.meta.env.VITE_API_URL ?? API_BASE_URL;
 
-let refreshPromise: Promise<boolean> | null = null;
+let restorePromise: Promise<boolean> | null = null;
+
+async function whoAmI(): Promise<boolean> {
+  try {
+    const res = await fetch(`${baseUrl}/auth/me`, { credentials: 'include' });
+    if (!res.ok) return false;
+    const data = await res.json();
+    setSession({ user: data.user });
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 /**
- * Troca o refresh em cookie por um access em memória. Chamado no boot para a
- * sessão sobreviver ao reload (o token de access nunca é persistido).
+ * Restaura a sessão no boot. Os dois tokens vivem em cookies httpOnly: o
+ * navegador os envia sozinho, então o JS nunca os vê. Só se o access cookie
+ * estiver vencido é que o refresh gira (rotação single-use).
  */
 export function restoreSession(): Promise<boolean> {
-  refreshPromise ??= (async () => {
+  restorePromise ??= (async () => {
+    if (await whoAmI()) return true;
     try {
       const res = await fetch(`${baseUrl}/auth/refresh`, {
         method: 'POST',
@@ -18,24 +32,23 @@ export function restoreSession(): Promise<boolean> {
       });
       if (!res.ok) return false;
       const data = await res.json();
-      setSession({ accessToken: data.accessToken, user: data.user });
+      setSession({ user: data.user });
       return true;
     } catch {
       return false;
     }
   })().finally(() => {
-    refreshPromise = null;
+    restorePromise = null;
   });
-  return refreshPromise;
+  return restorePromise;
 }
 
-function request(path: string, token: string | undefined, options?: RequestInit) {
+function request(path: string, options?: RequestInit) {
   return fetch(`${baseUrl}${path}`, {
     ...options,
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options?.headers,
     },
   });
@@ -43,10 +56,10 @@ function request(path: string, token: string | undefined, options?: RequestInit)
 
 export async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const isAuthCall = path.startsWith('/auth/');
-  let res = await request(path, getSession()?.accessToken, options);
+  let res = await request(path, options);
 
   if (res.status === 401 && !isAuthCall && (await restoreSession())) {
-    res = await request(path, getSession()?.accessToken, options);
+    res = await request(path, options);
   }
 
   if (!res.ok) {

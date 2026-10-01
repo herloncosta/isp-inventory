@@ -25,10 +25,10 @@ Prover um sistema simples, performático e confiável para gerenciamento de insu
 
 ### Módulo 1: Autenticação e Perfis de Acesso (RBAC)
 
-| ID     | Requisito                                                                                                                                                                                              |
-| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| RF-001 | **Autenticação**: login via e-mail e senha com JWT access (15min) + refresh (7d, rotação single-use), `POST /auth/refresh`, `POST /auth/logout` e lista de revogação (`revoked_tokens`).               |
-| RF-002 | **Perfis de Usuário**: ADMIN (acesso total), ESTOQUISTA (entradas, saídas, movimentações, inventário), TECNICO (visualização de materiais alocados no próprio carro/almoxarifado móvel e requisições). |
+| ID     | Requisito                                                                                                                                                                                                                          |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| RF-001 | **Autenticação**: login via e-mail e senha com JWT access (15min) + refresh (7d, rotação single-use), ambos em cookie httpOnly; `GET /auth/me`, `POST /auth/refresh`, `POST /auth/logout` e lista de revogação (`revoked_tokens`). |
+| RF-002 | **Perfis de Usuário**: ADMIN (acesso total), ESTOQUISTA (entradas, saídas, movimentações, inventário), TECNICO (visualização de materiais alocados no próprio carro/almoxarifado móvel e requisições).                             |
 
 ### Módulo 2: Gestão de Cadastros Base
 
@@ -65,14 +65,14 @@ Prover um sistema simples, performático e confiável para gerenciamento de insu
 
 ## 3. Requisitos Não Funcionais (RNF)
 
-| ID      | Requisito                                                                                                                                                                     |
-| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| RNF-001 | **Arquitetura Backend**: TypeScript + NestJS, Modular Architecture e Clean Architecture.                                                                                      |
-| RNF-002 | **Banco de Dados e ORM**: PostgreSQL com Prisma ORM (v7).                                                                                                                     |
-| RNF-003 | **Frontend**: SPA responsiva em React (TypeScript) + Vite + TailwindCSS + React Query (TanStack Query).                                                                       |
-| RNF-004 | **Desempenho**: Tempo de resposta de leitura da dashboard e consultas de saldo de estoque não deve ultrapassar 200ms.                                                         |
-| RNF-005 | **Auditoria e Logs**: Toda movimentação de estoque (entrada, saída, transferência) deve registrar imutavelmente o user_id, timestamp, tipo_movimentacao e quantidade/seriais. |
-| RNF-006 | **Segurança de tokens**: access (memória, 15min) + refresh em cookie httpOnly/SameSite=Lax (7d, rotação single-use); revogação em `revoked_tokens`; nunca em localStorage.    |
+| ID      | Requisito                                                                                                                                                                                                                                                                                                |
+| ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| RNF-001 | **Arquitetura Backend**: TypeScript + NestJS, Modular Architecture e Clean Architecture.                                                                                                                                                                                                                 |
+| RNF-002 | **Banco de Dados e ORM**: PostgreSQL com Prisma ORM (v7).                                                                                                                                                                                                                                                |
+| RNF-003 | **Frontend**: SPA responsiva em React (TypeScript) + Vite + TailwindCSS + React Query (TanStack Query).                                                                                                                                                                                                  |
+| RNF-004 | **Desempenho**: Tempo de resposta de leitura da dashboard e consultas de saldo de estoque não deve ultrapassar 200ms.                                                                                                                                                                                    |
+| RNF-005 | **Auditoria e Logs**: Toda movimentação de estoque (entrada, saída, transferência) deve registrar imutavelmente o user_id, timestamp, tipo_movimentacao e quantidade/seriais.                                                                                                                            |
+| RNF-006 | **Segurança de tokens**: access (15min) e refresh (7d, rotação single-use) **ambos em cookie httpOnly/SameSite=Lax**, nunca em localStorage e nunca devolvidos no corpo da resposta; revogação em `revoked_tokens`; `GET /auth/me` devolve o usuário autenticado para o boot da SPA sem girar o refresh. |
 
 ---
 
@@ -137,7 +137,7 @@ Prover um sistema simples, performático e confiável para gerenciamento de insu
 - [x] Schema Prisma (7 tabelas, incl. `revoked_tokens`)
 - [x] Módulo Auth (login, refresh com rotação, logout, guards RBAC + revogação)
 - [x] Módulo Users (CRUD mínimo ADMIN-only)
-- [x] Frontend com access em memória + refresh em cookie httpOnly (retry automático, sobrevive ao reload)
+- [x] Frontend sem token em JS: access e refresh em cookie httpOnly, sessão restaurada por `GET /auth/me` (retry via refresh sobrevive ao reload)
 - [x] Módulo Products (CRUD)
 - [x] Módulo Technicians (CRUD)
 - [x] Módulo Suppliers (CRUD)

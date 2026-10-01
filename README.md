@@ -105,6 +105,10 @@ pnpm --filter api test:coverage  # com cobertura
 
 Regras de estoque puras (`canTransfer`, `findLowStock`, `hasDuplicateSerial`) vivem em `apps/api/src/modules/stock/stock.rules.ts` com cobertura em `stock.rules.spec.ts`.
 
+## Sessão
+
+Login e refresh guardam access (15min) e refresh (7d) em **cookies httpOnly**, nenhum dos dois devolvido no corpo da resposta. O `GET /auth/me` devolve o usuário autenticado; o browser envia os cookies sozinho, então nenhum token é legível por JavaScript. Recarregar a página não gira o refresh token.
+
 ## Workflow Git
 
 - `develop` — integração; toda feature parte daqui.
