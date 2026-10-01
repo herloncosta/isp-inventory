@@ -1,7 +1,15 @@
-import { API_BASE_URL } from '@isp/shared';
 import { clearSession, setSession } from './auth-store';
 
-const baseUrl = import.meta.env.VITE_API_URL ?? API_BASE_URL;
+/**
+ * A API é chamada na MESMA ORIGEM do front, via o proxy `/api` do Vite
+ * (apps/web/vite.config.ts). Isso importa: com o cookie de sessão, uma
+ * chamada de outra origem depende da política de cookie do navegador — e
+ * aí a sessão simplesmente não volta. Same-origin não tem CORS e o cookie
+ * é de primeira parte.
+ *
+ * Em produção, aponte VITE_API_URL para a raiz da API (ex.: https://api.exemplo.com).
+ */
+const baseUrl = import.meta.env.VITE_API_URL ?? '/api';
 
 let restorePromise: Promise<boolean> | null = null;
 
@@ -64,6 +72,7 @@ export async function apiFetch<T>(path: string, options?: RequestInit): Promise<
 
   if (!res.ok) {
     if (res.status === 401 && !isAuthCall) {
+      console.error(`[auth] 401 em ${path} — limpando a sessão`);
       clearSession();
       window.location.href = '/login';
     }

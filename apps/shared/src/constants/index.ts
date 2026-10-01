@@ -1,5 +1,3 @@
-export const API_BASE_URL = 'http://localhost:3000';
-
 export const ROLE_LABELS: Record<string, string> = {
   ADMIN: 'Administrador',
   ESTOQUISTA: 'Estoquista',
