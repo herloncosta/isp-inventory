@@ -47,6 +47,7 @@ export class StockService {
       },
       orderBy: { createdAt: 'desc' },
       take: 100,
+      include: { product: true },
     });
   }
 
