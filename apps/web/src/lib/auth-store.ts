@@ -7,7 +7,6 @@ export interface AuthUser {
 
 export interface Session {
   accessToken: string;
-  refreshToken: string;
   user: AuthUser;
 }
 

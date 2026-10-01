@@ -7,21 +7,14 @@ let refreshPromise: Promise<boolean> | null = null;
 
 function tryRefresh(): Promise<boolean> {
   refreshPromise ??= (async () => {
-    const session = getSession();
-    if (!session?.refreshToken) return false;
     try {
       const res = await fetch(`${baseUrl}/auth/refresh`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken: session.refreshToken }),
+        credentials: 'include',
       });
       if (!res.ok) return false;
       const data = await res.json();
-      setSession({
-        accessToken: data.accessToken,
-        refreshToken: data.refreshToken,
-        user: data.user,
-      });
+      setSession({ accessToken: data.accessToken, user: data.user });
       return true;
     } catch {
       return false;
@@ -35,6 +28,7 @@ function tryRefresh(): Promise<boolean> {
 function request(path: string, token: string | undefined, options?: RequestInit) {
   return fetch(`${baseUrl}${path}`, {
     ...options,
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),

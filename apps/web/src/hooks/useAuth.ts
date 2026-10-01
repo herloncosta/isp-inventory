@@ -11,7 +11,6 @@ import {
 
 interface LoginResponse {
   accessToken: string;
-  refreshToken: string;
   user: AuthUser;
 }
 
@@ -22,12 +21,8 @@ export function useAuth() {
     token: session?.accessToken ?? null,
     user: session?.user ?? null,
     logout: async () => {
-      const current = getSession();
       try {
-        await apiFetch('/auth/logout', {
-          method: 'POST',
-          body: JSON.stringify({ refreshToken: current?.refreshToken }),
-        });
+        await apiFetch('/auth/logout', { method: 'POST' });
       } catch {
         return;
       } finally {
@@ -48,11 +43,7 @@ export function useLogin() {
         body: JSON.stringify(data),
       }),
     onSuccess: (data) => {
-      setSession({
-        accessToken: data.accessToken,
-        refreshToken: data.refreshToken,
-        user: data.user,
-      });
+      setSession({ accessToken: data.accessToken, user: data.user });
       queryClient.setQueryData(['user'], data.user);
     },
   });

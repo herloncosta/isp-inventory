@@ -72,7 +72,7 @@ Prover um sistema simples, performático e confiável para gerenciamento de insu
 | RNF-003 | **Frontend**: SPA responsiva em React (TypeScript) + Vite + TailwindCSS + React Query (TanStack Query).                                                                                    |
 | RNF-004 | **Desempenho**: Tempo de resposta de leitura da dashboard e consultas de saldo de estoque não deve ultrapassar 200ms.                                                                      |
 | RNF-005 | **Auditoria e Logs**: Toda movimentação de estoque (entrada, saída, transferência) deve registrar imutavelmente o user_id, timestamp, tipo_movimentacao e quantidade/seriais.              |
-| RNF-006 | **Segurança de tokens**: access + refresh com `jti`; refresh single-use (rotação) e revogação em `revoked_tokens`; frontend mantém tokens somente em memória (nunca localStorage/cookies). |
+| RNF-006 | **Segurança de tokens**: access (memória, 15min) + refresh em cookie httpOnly/SameSite=Lax (7d, rotação single-use); revogação em `revoked_tokens`; nunca em localStorage. |
 
 ---
 
@@ -137,7 +137,7 @@ Prover um sistema simples, performático e confiável para gerenciamento de insu
 - [x] Schema Prisma (7 tabelas, incl. `revoked_tokens`)
 - [x] Módulo Auth (login, refresh com rotação, logout, guards RBAC + revogação)
 - [x] Módulo Users (CRUD mínimo ADMIN-only)
-- [x] Frontend com tokens em memória + retry automático via refresh
+- [x] Frontend com access em memória + refresh em cookie httpOnly (retry automático, sobrevive ao reload)
 - [x] Módulo Products (CRUD)
 - [x] Módulo Technicians (CRUD)
 - [x] Módulo Suppliers (CRUD)
