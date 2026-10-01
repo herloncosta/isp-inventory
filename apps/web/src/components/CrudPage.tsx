@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useCreate, useList } from '../hooks/useCrud';
+import Modal from './Modal';
 import RemoteSelect from './RemoteSelect';
 
 export interface Column {
@@ -72,18 +73,18 @@ export default function CrudPage({ title, queryKey, endpoint, columns, fields }:
         <h1 className="text-lg font-bold uppercase tracking-[0.16em] text-ink">{title}</h1>
         <button
           onClick={() => {
-            setOpen((v) => !v);
+            setOpen(true);
             setSaved(false);
           }}
           className="stamp-ghost"
-          aria-expanded={open}
+          aria-haspopup="dialog"
         >
-          {open ? 'Fechar' : 'Novo registro'}
+          Novo registro
         </button>
       </div>
 
-      {open && (
-        <form onSubmit={submit} className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <Modal open={open} title={`Novo registro em ${title}`} onClose={() => setOpen(false)}>
+        <form onSubmit={submit} className="grid gap-5 sm:grid-cols-2">
           {fields.map((f) => (
             <div key={f.key}>
               <label className="label">{f.label}</label>
@@ -123,7 +124,7 @@ export default function CrudPage({ title, queryKey, endpoint, columns, fields }:
             </div>
           ))}
 
-          <div className="flex flex-wrap items-center gap-4 sm:col-span-2 lg:col-span-3">
+          <div className="flex flex-wrap items-center gap-4 sm:col-span-2">
             <button type="submit" disabled={create.isPending} className="stamp">
               {create.isPending ? 'Salvando...' : 'Registrar'}
             </button>
@@ -134,10 +135,10 @@ export default function CrudPage({ title, queryKey, endpoint, columns, fields }:
             )}
           </div>
         </form>
-      )}
+      </Modal>
 
       {saved && (
-        <p className="mt-4 text-sm text-carbon">
+        <p className="mt-4 text-sm text-carbon" role="status">
           Registro salvo. A via do novo item já consta no histórico de movimentações.
         </p>
       )}

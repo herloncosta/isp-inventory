@@ -59,6 +59,12 @@ spacing:
   bloco: '32px'
   linha: '48px'
 components:
+  popup-talhao:
+    backgroundColor: '{colors.papel-autocopiativo}'
+    textColor: '{colors.grafite}'
+    rounded: '{rounded.form}'
+    padding: '16px'
+    width: 'min(34rem, calc(100vw - 2rem))'
   capa-talhao:
     backgroundColor: '{colors.azul-de-via}'
     textColor: '{colors.papel-autocopiativo}'
@@ -230,6 +236,19 @@ A borda é o instrumento principal: campo preenchido tem só a régua de 2px emb
 - **Erro / desabilitado:** desabilitado usa borda pontilhada e grafite 45; o carimbo desabilitado usa papel levantado com texto em grafite 70 (5:1).
 - **Todo campo tem o mesmo corpo de texto** (`1.125rem`, o papel Medida), inclusive a textarea de seriais: no dedo, com luva, um campo não pode ser menor que os outros.
 
+### Popup do talão
+
+Tarefa de registro que é autocontida (criar produto, técnico, fornecedor) acontece
+em popup sobre `<dialog>` nativo — o navegador entrega foco preso, `Escape` e
+`::backdrop`, sem biblioteca e sem armadilha de foco feita à mão. O popup é a
+própria folha: papel, borda de 2px em tinta, cabeçalho com o título e o botão
+Fechar. Largura `min(34rem, 100vw - 2rem)`, conteúdo com `max-height: 75dvh` e
+rolagem própria para o cabeçalho não sair. Clique fora fecha; o formulário só
+desaparece depois de gravado.
+
+Regra: o ledger fica visível atrás do popup. Um cadastro novo não empurra a
+tabela para baixo nem some de onde a pessoa estava olhando.
+
 ### Marca e capa do login
 
 A marca é um SVG autoral: a gota de fibra descendo até o equipamento, em traço
@@ -273,6 +292,8 @@ Tabela de dados com cabeçalho em versalete de 11px e régua de 1px em grafite e
 
 ### Don't:
 
+- **Don't** expandir o formulário de registro na página: empurra o ledger e
+  perde o contexto de onde a pessoa estava.
 - **Don't** criar card com sombra em repouso; a divisão é régua impressa.
 - **Don't** usar rounded-lg, cápsula ou círculo como forma de container.
 - **Don't** usar o azul de via em rótulo de texto corrido, nem o vermelho em item saudável.
