@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { TechniciansService } from './technicians.service.js';
+import { CreateTechnicianDto, UpdateTechnicianDto } from './dto.js';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../../common/guards/roles.guard.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
@@ -22,13 +23,13 @@ export class TechniciansController {
 
   @Post()
   @Roles(Role.ADMIN, Role.ESTOQUISTA)
-  create(@Body() data: any) {
+  create(@Body() data: CreateTechnicianDto) {
     return this.techniciansService.create(data);
   }
 
   @Patch(':id')
   @Roles(Role.ADMIN, Role.ESTOQUISTA)
-  update(@Param('id') id: string, @Body() data: any) {
+  update(@Param('id') id: string, @Body() data: UpdateTechnicianDto) {
     return this.techniciansService.update(id, data);
   }
 

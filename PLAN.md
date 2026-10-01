@@ -75,10 +75,10 @@ isp-inventory/
 
 ### Fase 3 — Cadastros Base (RF-003, RF-004, RF-005)
 
-- [ ] Migração: `Products`, `Technicians`, `Vehicles`, `Suppliers`
-- [ ] CRUD produtos com categoria/unidade/estoque mínimo
-- [ ] CRUD técnicos vinculados a veículos (StockLocations tipo VEHICLE)
-- [ ] CRUD fornecedores (CNPJ, razão social, contato)
+- [x] Migração: `Products`, `Technicians`, `Vehicles`, `Suppliers`
+- [x] CRUD produtos com categoria/unidade/estoque mínimo (DTOs com enums, 409 em SKU duplicado)
+- [x] CRUD técnicos vinculados a veículos + módulo Vehicles (P2003 → 400 em veículo inexistente)
+- [x] CRUD fornecedores (CNPJ, razão social, contato; 409 em CNPJ duplicado)
 
 ### Fase 4 — Entradas & Compras (RF-006, RF-007, RF-008)
 

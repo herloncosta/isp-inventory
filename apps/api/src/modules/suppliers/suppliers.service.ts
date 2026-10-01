@@ -1,5 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service.js';
+import { throwPrismaError } from '../../common/prisma-errors.js';
+import { CreateSupplierDto, UpdateSupplierDto } from './dto.js';
+
+const MESSAGES = { duplicate: 'CNPJ já cadastrado', reference: 'Referência inexistente' };
 
 @Injectable()
 export class SuppliersService {
@@ -15,13 +19,21 @@ export class SuppliersService {
     return supplier;
   }
 
-  create(data: any) {
-    return this.prisma.supplier.create({ data });
+  async create(data: CreateSupplierDto) {
+    try {
+      return await this.prisma.supplier.create({ data });
+    } catch (e) {
+      throwPrismaError(e, MESSAGES);
+    }
   }
 
-  async update(id: string, data: any) {
+  async update(id: string, data: UpdateSupplierDto) {
     await this.findOne(id);
-    return this.prisma.supplier.update({ where: { id }, data });
+    try {
+      return await this.prisma.supplier.update({ where: { id }, data });
+    } catch (e) {
+      throwPrismaError(e, MESSAGES);
+    }
   }
 
   async remove(id: string) {

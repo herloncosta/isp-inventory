@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { PrismaModule } from './modules/prisma.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { UsersModule } from './modules/users/users.module.js';
+import { VehiclesModule } from './modules/vehicles/vehicles.module.js';
 import { ProductsModule } from './modules/products/products.module.js';
 import { TechniciansModule } from './modules/technicians/technicians.module.js';
 import { SuppliersModule } from './modules/suppliers/suppliers.module.js';
@@ -13,6 +14,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module.js';
     PrismaModule,
     AuthModule,
     UsersModule,
+    VehiclesModule,
     ProductsModule,
     TechniciansModule,
     SuppliersModule,
