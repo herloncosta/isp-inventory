@@ -1,10 +1,39 @@
 import { API_BASE_URL } from '@isp/shared';
+import { clearSession, getSession, setSession } from './auth-store';
 
 const baseUrl = import.meta.env.VITE_API_URL ?? API_BASE_URL;
 
-export async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
-  const token = localStorage.getItem('token');
-  const res = await fetch(`${baseUrl}${path}`, {
+let refreshPromise: Promise<boolean> | null = null;
+
+function tryRefresh(): Promise<boolean> {
+  refreshPromise ??= (async () => {
+    const session = getSession();
+    if (!session?.refreshToken) return false;
+    try {
+      const res = await fetch(`${baseUrl}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken: session.refreshToken }),
+      });
+      if (!res.ok) return false;
+      const data = await res.json();
+      setSession({
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+        user: data.user,
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  })().finally(() => {
+    refreshPromise = null;
+  });
+  return refreshPromise;
+}
+
+function request(path: string, token: string | undefined, options?: RequestInit) {
+  return fetch(`${baseUrl}${path}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -12,7 +41,21 @@ export async function apiFetch<T>(path: string, options?: RequestInit): Promise<
       ...options?.headers,
     },
   });
+}
+
+export async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
+  const isAuthCall = path.startsWith('/auth/');
+  let res = await request(path, getSession()?.accessToken, options);
+
+  if (res.status === 401 && !isAuthCall && (await tryRefresh())) {
+    res = await request(path, getSession()?.accessToken, options);
+  }
+
   if (!res.ok) {
+    if (res.status === 401 && !isAuthCall) {
+      clearSession();
+      window.location.href = '/login';
+    }
     const error = await res.json().catch(() => ({ message: 'Erro desconhecido' }));
     throw new Error(error.message || `HTTP ${res.status}`);
   }

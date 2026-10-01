@@ -65,11 +65,13 @@ isp-inventory/
 
 ### Fase 2 — Auth & RBAC (RF-001, RF-002)
 
-- [ ] Migração: `Users` table
-- [ ] Módulo auth: login, JWT, bcrypt
-- [ ] Guards: `RolesGuard`, `JwtAuthGuard`
-- [ ] Decorator `@Roles(Role.ADMIN, Role.ESTOQUISTA)`
-- [ ] Seed: usuários admin/estoquista/tecnico
+- [x] Migração: `Users` table
+- [x] Módulo auth: login, JWT, bcrypt
+- [x] Guards: `RolesGuard`, `JwtAuthGuard`
+- [x] Decorator `@Roles(Role.ADMIN, Role.ESTOQUISTA)`
+- [x] Seed: usuários admin/estoquista/tecnico
+- [x] Módulo users: CRUD mínimo ADMIN-only (provisionamento de contas)
+- [x] Security: access (15min) + refresh (7d) com rotação single-use, lista de revogação (`revoked_tokens`), guard valida `typ`/`jti`; frontend guarda tokens só em memória com retry via refresh
 
 ### Fase 3 — Cadastros Base (RF-003, RF-004, RF-005)
 

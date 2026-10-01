@@ -105,6 +105,13 @@ model StockMovement {
   @@map("stock_movements")
 }
 
+model RevokedToken {
+  jti       String   @id
+  expiresAt DateTime @map("expires_at")
+
+  @@map("revoked_tokens")
+}
+
 model SerialItem {
   id              String  @id @default(uuid())
   productId       String  @map("product_id")
