@@ -1,8 +1,6 @@
-import { useEffect, useState } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { Role } from '@isp/shared';
-import { restoreSession } from './lib/api';
-import { useAuth } from './hooks/useAuth';
+import ProtectedRoute from './components/ProtectedRoute';
 import RequireRole from './components/RequireRole';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
@@ -17,19 +15,6 @@ import MovementsPage from './pages/MovementsPage';
 import Layout from './components/Layout';
 
 const STAFF = [Role.ADMIN, Role.ESTOQUISTA];
-
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { logged } = useAuth();
-  const [checked, setChecked] = useState(false);
-
-  useEffect(() => {
-    restoreSession().finally(() => setChecked(true));
-  }, []);
-
-  if (!checked) return <p className="p-6 text-sm text-ink-70">Verificando sessão...</p>;
-  if (!logged) return <Navigate to="/login" replace />;
-  return <>{children}</>;
-}
 
 export default function App() {
   return (

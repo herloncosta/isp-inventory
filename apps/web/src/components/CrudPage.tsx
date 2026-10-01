@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useCreate, useList } from '../hooks/useCrud';
+import RemoteSelect from './RemoteSelect';
 
 export interface Column {
   key: string;
@@ -39,38 +40,6 @@ function display(value: unknown, values?: Record<string, string>): string {
   if (value === null || value === undefined || value === '') return '—';
   const raw = String(value);
   return values?.[raw] ?? raw;
-}
-
-function RemoteSelect({
-  source,
-  value,
-  onChange,
-  required,
-}: {
-  source: { queryKey: string; endpoint: string };
-  value: string;
-  onChange: (v: string) => void;
-  required?: boolean;
-}) {
-  const { data } = useList<{ id: string; name?: string; plate?: string }>(
-    source.queryKey,
-    source.endpoint,
-  );
-  return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      required={required}
-      className="field"
-    >
-      <option value="">Selecione</option>
-      {data?.map((o) => (
-        <option key={o.id} value={o.id}>
-          {o.name ?? o.plate ?? o.id}
-        </option>
-      ))}
-    </select>
-  );
 }
 
 export default function CrudPage({ title, queryKey, endpoint, columns, fields }: CrudPageProps) {

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { MOVEMENT_LABELS } from '@isp/shared';
 import { useDashboard } from '../hooks/useDashboard';
+import StatCard from '../components/StatCard';
 
 export default function DashboardPage() {
   const { data, isLoading, error } = useDashboard();
@@ -25,10 +26,10 @@ export default function DashboardPage() {
         </div>
 
         <dl className="mt-3 grid grid-cols-2 gap-x-6 sm:grid-cols-4">
-          <Stat label="Produtos" value={data.totalProducts} />
-          <Stat label="Locais" value={data.totalLocations} />
-          <Stat label="Movimentações" value={data.totalMovements} />
-          <Stat label="Em alerta" value={data.lowStockCount} alert={data.lowStockCount > 0} />
+          <StatCard label="Produtos" value={data.totalProducts} />
+          <StatCard label="Locais" value={data.totalLocations} />
+          <StatCard label="Movimentações" value={data.totalMovements} />
+          <StatCard label="Em alerta" value={data.lowStockCount} alert={data.lowStockCount > 0} />
         </dl>
       </section>
 
@@ -107,17 +108,6 @@ export default function DashboardPage() {
           </div>
         )}
       </section>
-    </div>
-  );
-}
-
-function Stat({ label, value, alert }: { label: string; value: number; alert?: boolean }) {
-  return (
-    <div className="rule-b pb-2">
-      <dt className="label">{label}</dt>
-      <dd className={`num mt-0.5 text-3xl font-medium ${alert ? 'text-red-carbon' : 'text-ink'}`}>
-        {value}
-      </dd>
     </div>
   );
 }

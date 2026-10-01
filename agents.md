@@ -177,6 +177,7 @@ Prover um sistema simples, performático e confiável para gerenciamento de insu
 - Branches: `main` (estável) e `develop` (integração).
 - Commits em português no padrão Conventional Commits: `tipo: descrição` (`feat`, `fix`, `docs`, `chore`, `refactor`, `test`).
 - Padrões de código: Prettier como formatador oficial; baixo acoplamento, alta coesão; preferir algoritmos O(n) com `Set`/`Map` em validações de unicidade e filtros de estoque.
+- Organização do front: **um componente por arquivo** em `apps/web/src/components/` e `apps/web/src/pages/`; cada arquivo exporta um único componente. O que não é componente vai para `apps/web/src/features/<dominio>/` (tipos, constantes, hooks e parsers, sem JSX) ou para `src/types.ts` quando for compartilhado entre domínios. Componentes de formulário reutilizáveis ficam em `components/form/`. Nenhuma tela concentra mais de um componente.
 
 ## 9. Changelog
 
