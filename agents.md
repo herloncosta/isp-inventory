@@ -27,7 +27,7 @@ Prover um sistema simples, performático e confiável para gerenciamento de insu
 
 | ID     | Requisito                                                                                                                                                                                              |
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| RF-001 | **Autenticação**: login via e-mail e senha com JWT access (15min) + refresh (7d, rotação single-use), `POST /auth/refresh`, `POST /auth/logout` e lista de revogação (`revoked_tokens`). |
+| RF-001 | **Autenticação**: login via e-mail e senha com JWT access (15min) + refresh (7d, rotação single-use), `POST /auth/refresh`, `POST /auth/logout` e lista de revogação (`revoked_tokens`).               |
 | RF-002 | **Perfis de Usuário**: ADMIN (acesso total), ESTOQUISTA (entradas, saídas, movimentações, inventário), TECNICO (visualização de materiais alocados no próprio carro/almoxarifado móvel e requisições). |
 
 ### Módulo 2: Gestão de Cadastros Base
@@ -65,13 +65,13 @@ Prover um sistema simples, performático e confiável para gerenciamento de insu
 
 ## 3. Requisitos Não Funcionais (RNF)
 
-| ID      | Requisito                                                                                                                                                                     |
-| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| RNF-001 | **Arquitetura Backend**: TypeScript + NestJS, Modular Architecture e Clean Architecture.                                                                                      |
-| RNF-002 | **Banco de Dados e ORM**: PostgreSQL com Prisma ORM (v7).                                                                                                                     |
-| RNF-003 | **Frontend**: SPA responsiva em React (TypeScript) + Vite + TailwindCSS + React Query (TanStack Query).                                                                       |
-| RNF-004 | **Desempenho**: Tempo de resposta de leitura da dashboard e consultas de saldo de estoque não deve ultrapassar 200ms.                                                         |
-| RNF-005 | **Auditoria e Logs**: Toda movimentação de estoque (entrada, saída, transferência) deve registrar imutavelmente o user_id, timestamp, tipo_movimentacao e quantidade/seriais. |
+| ID      | Requisito                                                                                                                                                                                  |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| RNF-001 | **Arquitetura Backend**: TypeScript + NestJS, Modular Architecture e Clean Architecture.                                                                                                   |
+| RNF-002 | **Banco de Dados e ORM**: PostgreSQL com Prisma ORM (v7).                                                                                                                                  |
+| RNF-003 | **Frontend**: SPA responsiva em React (TypeScript) + Vite + TailwindCSS + React Query (TanStack Query).                                                                                    |
+| RNF-004 | **Desempenho**: Tempo de resposta de leitura da dashboard e consultas de saldo de estoque não deve ultrapassar 200ms.                                                                      |
+| RNF-005 | **Auditoria e Logs**: Toda movimentação de estoque (entrada, saída, transferência) deve registrar imutavelmente o user_id, timestamp, tipo_movimentacao e quantidade/seriais.              |
 | RNF-006 | **Segurança de tokens**: access + refresh com `jti`; refresh single-use (rotação) e revogação em `revoked_tokens`; frontend mantém tokens somente em memória (nunca localStorage/cookies). |
 
 ---
