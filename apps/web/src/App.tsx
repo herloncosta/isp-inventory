@@ -11,6 +11,7 @@ import VehiclesPage from './pages/VehiclesPage';
 import LocationsPage from './pages/LocationsPage';
 import UsersPage from './pages/UsersPage';
 import StockPage from './pages/StockPage';
+import MovementsPage from './pages/MovementsPage';
 import Layout from './components/Layout';
 
 const STAFF = [Role.ADMIN, Role.ESTOQUISTA];
@@ -35,6 +36,7 @@ export default function App() {
       >
         <Route index element={<DashboardPage />} />
         <Route path="stock" element={<StockPage />} />
+        <Route path="movements" element={<MovementsPage />} />
         <Route
           path="products"
           element={
