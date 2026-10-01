@@ -101,21 +101,28 @@ isp-inventory/
 - [x] Alerta de estoque mínimo (query + endpoint, `lowStock` no dashboard)
 - [x] Vínculo local↔veículo (`vehicleId` em StockLocation) + `GET /stock/my-balances` (técnico vê próprio carro)
 - [x] Filtros em movimentações: `type`, `from`, `to` + índice em `created_at` (RNF-004)
-- [ ] Filtros por local, produto, período
+- [x] Filtros por local, produto, OS e período (API + UI no histórico)
 
 ### Fase 7 — Frontend Core
 
-- [ ] Layout + roteamento (React Router)
-- [ ] Login + proteção de rotas por perfil
-- [ ] Dashboard com cards de saldo e alertas
-- [ ] Páginas: Produtos, Técnicos, Fornecedores, Estoque
+- [x] Layout + roteamento (React Router)
+- [x] Login + proteção de rotas por perfil
+- [x] Dashboard com cards de saldo e alertas
+- [x] Páginas: Produtos, Técnicos, Fornecedores, Estoque (+ Veículos, Locais, Usuários)
 
 ### Fase 8 — Frontend Movimentações
 
-- [ ] Formulário de entrada (simples + lote de seriais)
-- [ ] Transferência entre locais
-- [ ] Baixa em OS
-- [ ] Devolução com seleção de status
+- [x] Formulário de entrada (simples + lote de seriais + fracionada)
+- [x] Transferência entre locais
+- [x] Baixa em OS
+- [x] Devolução com seleção de status
+- [x] Histórico com filtros avançados
+
+### Fase 9 — Qualidade & CI
+
+- [x] Testes unitários backend (Vitest, 64 testes)
+- [x] CI (GitHub Actions: prettier + testes API + build web)
+- [ ] Testes e2e
 
 ## Regras de Negócio
 
