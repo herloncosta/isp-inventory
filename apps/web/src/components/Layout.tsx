@@ -1,15 +1,24 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Role } from '@isp/shared';
 import { useAuth } from '../hooks/useAuth';
 
-const navItems = [
-  { path: '/', label: 'Dashboard' },
-  { path: '/products', label: 'Produtos' },
-  { path: '/stock', label: 'Estoque' },
+const STAFF = [Role.ADMIN, Role.ESTOQUISTA];
+
+const navItems: { path: string; label: string; roles: string[] }[] = [
+  { path: '/', label: 'Dashboard', roles: [Role.ADMIN, Role.ESTOQUISTA, Role.TECNICO] },
+  { path: '/stock', label: 'Estoque', roles: [Role.ADMIN, Role.ESTOQUISTA, Role.TECNICO] },
+  { path: '/products', label: 'Produtos', roles: STAFF },
+  { path: '/technicians', label: 'Técnicos', roles: STAFF },
+  { path: '/suppliers', label: 'Fornecedores', roles: STAFF },
+  { path: '/vehicles', label: 'Veículos', roles: STAFF },
+  { path: '/locations', label: 'Locais', roles: STAFF },
+  { path: '/users', label: 'Usuários', roles: [Role.ADMIN] },
 ];
 
 export default function Layout() {
   const { user, logout } = useAuth();
   const location = useLocation();
+  const visible = navItems.filter((item) => user && item.roles.includes(user.role));
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -17,7 +26,7 @@ export default function Layout() {
         <div className="flex items-center gap-6">
           <h1 className="text-lg font-semibold text-gray-900">ISP Inventory</h1>
           <div className="flex gap-1">
-            {navItems.map((item) => (
+            {visible.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
