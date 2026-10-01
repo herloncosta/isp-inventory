@@ -1,4 +1,5 @@
 import { useList } from '../hooks/useCrud';
+import { toOptions } from '../features/options';
 
 interface RemoteSelectProps {
   source: { queryKey: string; endpoint: string };
@@ -9,10 +10,8 @@ interface RemoteSelectProps {
 
 /** Select populado por um endpoint existente — evita pedir UUID colado no campo. */
 export default function RemoteSelect({ source, value, onChange, required }: RemoteSelectProps) {
-  const { data } = useList<{ id: string; name?: string; plate?: string }>(
-    source.queryKey,
-    source.endpoint,
-  );
+  const { data } = useList<Record<string, unknown>>(source.queryKey, source.endpoint);
+  const options = toOptions(data);
 
   return (
     <select
@@ -22,9 +21,9 @@ export default function RemoteSelect({ source, value, onChange, required }: Remo
       className="field"
     >
       <option value="">Selecione</option>
-      {data?.map((o) => (
+      {options.map((o) => (
         <option key={o.id} value={o.id}>
-          {o.name ?? o.plate ?? o.id}
+          {o.name}
         </option>
       ))}
     </select>

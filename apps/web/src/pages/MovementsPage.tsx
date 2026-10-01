@@ -6,7 +6,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useList } from '../hooks/useCrud';
 import { MOVEMENT_TABS } from '../features/movements/constants';
 import type { Balance, BalanceState, Tab } from '../features/movements/types';
-import type { Option } from '../types';
+import { toOptions } from '../features/options';
 import EntryForm from '../components/movements/EntryForm';
 import HistoryList from '../components/movements/HistoryList';
 import IssueForm from '../components/movements/IssueForm';
@@ -22,9 +22,13 @@ export default function MovementsPage() {
   const isStaff = user?.role === Role.ADMIN || user?.role === Role.ESTOQUISTA;
   const [tab, setTab] = useState<Tab>(() => (user?.role === Role.TECNICO ? 'baixa' : 'entrada'));
 
-  const { data: products } = useList<Option>('products', '/products');
-  const { data: locations } = useList<Option>('locations', '/locations');
-  const { data: suppliers } = useList<Option>('suppliers', '/suppliers');
+  // fornecedor não tem `name`: a regra de rótulo vive em features/options
+  const { data: rawProducts } = useList<Record<string, unknown>>('products', '/products');
+  const { data: rawLocations } = useList<Record<string, unknown>>('locations', '/locations');
+  const { data: rawSuppliers } = useList<Record<string, unknown>>('suppliers', '/suppliers');
+  const products = toOptions(rawProducts);
+  const locations = toOptions(rawLocations);
+  const suppliers = toOptions(rawSuppliers);
 
   const balanceEndpoint = user?.role === Role.TECNICO ? '/stock/my-balances' : '/stock/balances';
   const {
@@ -41,8 +45,8 @@ export default function MovementsPage() {
       ? 'carregando'
       : 'pronto';
 
-  const productName = (id: string) => products?.find((p) => p.id === id)?.name ?? '—';
-  const locationName = (id: string) => locations?.find((l) => l.id === id)?.name ?? '—';
+  const productName = (id: string) => products.find((p) => p.id === id)?.name ?? '—';
+  const locationName = (id: string) => locations.find((l) => l.id === id)?.name ?? '—';
   const visibleTabs = MOVEMENT_TABS.filter((t) => !t.staffOnly || isStaff);
 
   return (
@@ -66,17 +70,17 @@ export default function MovementsPage() {
 
       {tab === 'entrada' && isStaff && (
         <EntryForm
-          products={products ?? []}
-          locations={locations ?? []}
-          suppliers={suppliers ?? []}
+          products={products}
+          locations={locations}
+          suppliers={suppliers}
           productName={productName}
           locationName={locationName}
         />
       )}
       {tab === 'transferencia' && isStaff && (
         <TransferForm
-          products={products ?? []}
-          locations={locations ?? []}
+          products={products}
+          locations={locations}
           balances={balances ?? []}
           balanceState={balanceState}
           productName={productName}
@@ -85,8 +89,8 @@ export default function MovementsPage() {
       )}
       {tab === 'baixa' && (
         <IssueForm
-          products={products ?? []}
-          locations={locations ?? []}
+          products={products}
+          locations={locations}
           balances={balances ?? []}
           balanceState={balanceState}
           productName={productName}
@@ -95,15 +99,15 @@ export default function MovementsPage() {
       )}
       {tab === 'devolucao' && (
         <ReturnForm
-          products={products ?? []}
-          locations={locations ?? []}
+          products={products}
+          locations={locations}
           balances={balances ?? []}
           balanceState={balanceState}
           productName={productName}
           locationName={locationName}
         />
       )}
-      {tab === 'historico' && <HistoryList products={products ?? []} locations={locations ?? []} />}
+      {tab === 'historico' && <HistoryList products={products} locations={locations} />}
     </div>
   );
 }
