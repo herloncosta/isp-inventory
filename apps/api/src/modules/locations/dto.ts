@@ -13,6 +13,10 @@ export class CreateLocationDto {
   @IsString()
   @IsOptional()
   responsibleUserId?: string;
+
+  @IsString()
+  @IsOptional()
+  vehicleId?: string;
 }
 
 export class UpdateLocationDto extends PartialType(CreateLocationDto) {}

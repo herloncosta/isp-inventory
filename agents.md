@@ -144,6 +144,7 @@ Prover um sistema simples, performático e confiável para gerenciamento de insu
 - [x] Módulo Stock (balances, movements, serials)
 - [x] Módulo Locations + Entries (manual, lote de seriais, fracionada)
 - [x] Módulo Movements (transfers, issues em OS, returns com condição)
+- [x] Consultas: my-balances do técnico, filtros de movimentação, vínculo local↔veículo
 - [x] Módulo Dashboard (summary)
 - [x] Frontend base (Login, Dashboard, Products, Stock)
 - [x] Seed (3 usuários: admin/estoquista/tecnico)
@@ -172,6 +173,7 @@ Prover um sistema simples, performático e confiável para gerenciamento de insu
 5. **Refatorações** — somente ao final do projeto, em tarefa dedicada.
 
 - Branches: `main` (estável) e `develop` (integração).
+- Commits em português no padrão Conventional Commits: `tipo: descrição` (`feat`, `fix`, `docs`, `chore`, `refactor`, `test`).
 - Padrões de código: Prettier como formatador oficial; baixo acoplamento, alta coesão; preferir algoritmos O(n) com `Set`/`Map` em validações de unicidade e filtros de estoque.
 
 ## 9. Changelog

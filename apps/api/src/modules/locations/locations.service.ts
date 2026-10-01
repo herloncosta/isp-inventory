@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma.service.js';
 import { throwPrismaError } from '../../common/prisma-errors.js';
 import { CreateLocationDto, UpdateLocationDto } from './dto.js';
 
-const MESSAGES = { duplicate: 'Local já cadastrado', reference: 'Referência inexistente' };
+const MESSAGES = { duplicate: 'Local já cadastrado', reference: 'Veículo não encontrado' };
 
 @Injectable()
 export class LocationsService {
