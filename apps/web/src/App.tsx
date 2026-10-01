@@ -19,7 +19,7 @@ import Layout from './components/Layout';
 const STAFF = [Role.ADMIN, Role.ESTOQUISTA];
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { token } = useAuth();
+  const { logged } = useAuth();
   const [checked, setChecked] = useState(false);
 
   useEffect(() => {
@@ -27,7 +27,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }, []);
 
   if (!checked) return <p className="p-6 text-sm text-ink-70">Verificando sessão...</p>;
-  if (!token) return <Navigate to="/login" replace />;
+  if (!logged) return <Navigate to="/login" replace />;
   return <>{children}</>;
 }
 

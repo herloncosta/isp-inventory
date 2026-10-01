@@ -1,6 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../modules/prisma.service.js';
+import { ACCESS_COOKIE } from '../../modules/auth/auth.constants.js';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -26,8 +27,11 @@ export class JwtAuthGuard implements CanActivate {
     }
   }
 
+  /** cookie httpOnly primeiro (SPA); header Bearer continua válido para CLI e testes. */
   private extractToken(request: any): string | null {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
+    const fromCookie = request.cookies?.[ACCESS_COOKIE];
+    if (fromCookie) return fromCookie;
+    const [type, token] = request.headers?.authorization?.split(' ') ?? [];
     return type === 'Bearer' ? token : null;
   }
 }

@@ -10,7 +10,6 @@ import {
 } from '../lib/auth-store';
 
 interface LoginResponse {
-  accessToken: string;
   user: AuthUser;
 }
 
@@ -18,8 +17,8 @@ export function useAuth() {
   const session = useSyncExternalStore(subscribeSession, getSession);
   const queryClient = useQueryClient();
   return {
-    token: session?.accessToken ?? null,
     user: session?.user ?? null,
+    logged: Boolean(session?.user),
     logout: async () => {
       try {
         await apiFetch('/auth/logout', { method: 'POST' });
@@ -43,7 +42,7 @@ export function useLogin() {
         body: JSON.stringify(data),
       }),
     onSuccess: (data) => {
-      setSession({ accessToken: data.accessToken, user: data.user });
+      setSession({ user: data.user });
       queryClient.setQueryData(['user'], data.user);
     },
   });

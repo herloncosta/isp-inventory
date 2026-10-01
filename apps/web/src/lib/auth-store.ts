@@ -6,7 +6,6 @@ export interface AuthUser {
 }
 
 export interface Session {
-  accessToken: string;
   user: AuthUser;
 }
 

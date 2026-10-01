@@ -71,7 +71,7 @@ isp-inventory/
 - [x] Decorator `@Roles(Role.ADMIN, Role.ESTOQUISTA)`
 - [x] Seed: usuários admin/estoquista/tecnico
 - [x] Módulo users: CRUD mínimo ADMIN-only (provisionamento de contas)
-- [x] Security: access em memória (15min) + refresh em cookie httpOnly/SameSite=Lax (7d, rotação single-use), lista de revogação (`revoked_tokens`), guard valida `typ`/`jti`; retry automático via refresh (sessão sobrevive ao reload)
+- [x] Security: access (15min) + refresh (7d, rotação single-use) em cookie httpOnly/SameSite=Lax, nenhum token no corpo da resposta nem em localStorage; lista de revogação (`revoked_tokens`), guard lê o cookie (header Bearer ainda aceito) e valida `typ`/`jti`; `GET /auth/me` para o boot da SPA não girar refresh a cada reload
 
 ### Fase 3 — Cadastros Base (RF-003, RF-004, RF-005)
 

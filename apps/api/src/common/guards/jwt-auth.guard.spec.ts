@@ -9,8 +9,11 @@ function guard() {
   return new JwtAuthGuard(jwtMock as any, prismaMock as any);
 }
 
-function contextWith(headers: Record<string, string | undefined>) {
-  const request: any = { headers };
+function contextWith(
+  headers: Record<string, string | undefined>,
+  cookies: Record<string, string> = {},
+) {
+  const request: any = { headers, cookies };
   return {
     switchToHttp: () => ({ getRequest: () => request }),
     getRequest: () => request,
@@ -55,5 +58,29 @@ describe('JwtAuthGuard (RF-001)', () => {
     await expect(guard().canActivate(contextWith({ authorization: 'Bearer old' }))).rejects.toThrow(
       UnauthorizedException,
     );
+  });
+
+  it('libera pelo access cookie — a SPA não manda header', async () => {
+    const user = { sub: 'u1', role: 'TECNICO', typ: 'access', jti: 'j9' };
+    jwtMock.verifyAsync.mockResolvedValue(user);
+    const ctx = contextWith({}, { isp_access_token: 'do-cookie' });
+    await expect(guard().canActivate(ctx)).resolves.toBe(true);
+    expect(jwtMock.verifyAsync).toHaveBeenCalledWith('do-cookie');
+    expect(ctx.getRequest().user).toEqual(user);
+  });
+
+  it('o cookie tem precedência sobre o header', async () => {
+    jwtMock.verifyAsync.mockResolvedValue({ sub: 'u1', typ: 'access', jti: 'j10' });
+    await guard().canActivate(
+      contextWith({ authorization: 'Bearer do-header' }, { isp_access_token: 'do-cookie' }),
+    );
+    expect(jwtMock.verifyAsync).toHaveBeenCalledWith('do-cookie');
+  });
+
+  it('rejeita refresh token vindo do cookie de access', async () => {
+    jwtMock.verifyAsync.mockResolvedValue({ sub: 'u1', typ: 'refresh', jti: 'j11' });
+    await expect(
+      guard().canActivate(contextWith({}, { isp_access_token: 'refresh-embutido' })),
+    ).rejects.toThrow(UnauthorizedException);
   });
 });

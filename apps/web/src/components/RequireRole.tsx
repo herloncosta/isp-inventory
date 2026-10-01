@@ -7,8 +7,8 @@ interface RequireRoleProps {
 }
 
 export default function RequireRole({ allow, children }: RequireRoleProps) {
-  const { token, user } = useAuth();
-  if (!token) return <Navigate to="/login" replace />;
+  const { logged, user } = useAuth();
+  if (!logged) return <Navigate to="/login" replace />;
   if (!user || !allow.includes(user.role)) return <Navigate to="/" replace />;
   return <>{children}</>;
 }
