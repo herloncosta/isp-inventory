@@ -67,6 +67,12 @@ pnpm dev
 
 API em `http://localhost:3000` · Web em `http://localhost:5173`.
 
+## API na mesma origem
+
+O front chama a API em `/api/*`, e o proxy do Vite (`apps/web/vite.config.ts`) encaminha para `http://localhost:3000`. Isso é requisito do login: com o token em cookie, uma chamada de outra origem depende da política de cookie do navegador e a sessão simplesmente não volta. Na mesma origem não existe CORS e o cookie é de primeira parte.
+
+Para apontar a outro host (produção, por exemplo), defina `VITE_API_URL` com a raiz da API, ex.: `VITE_API_URL=https://api.exemplo.com`. Sem essa variável, vale `/api`.
+
 ## Variáveis de ambiente
 
 Copie `.env.example` para `.env` e ajuste:
