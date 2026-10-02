@@ -170,7 +170,7 @@ Auditoria de código de 2026-10-02. Cada item é implementado em um commit próp
 
 ### Médio
 
-- [ ] **S7** Guards globais (`APP_GUARD`) + decorator `@Public()` — autenticação passa a ser fail-closed por padrão
+- [x] **S7** Guards globais (`APP_GUARD`) + decorator `@Public()` — autenticação passa a ser fail-closed por padrão
 - [ ] **S8** `tokenVersion` em `User` — troca de senha/cargo desativa as sessões existentes no ato; trava de último admin ativo também no `update` de cargo
 - [ ] **S9** Cookie de refresh com `path: '/auth'` (não viaja em toda requisição) e `secure` não dependente só de `NODE_ENV`
 - [ ] **S10** Login com timing uniforme (hash dummy quando o usuário não existe) + log de tentativa negada

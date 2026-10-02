@@ -1,20 +1,11 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Req,
-  Res,
-  UnauthorizedException,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res, UnauthorizedException } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import { AuthService } from './auth.service.js';
 import { LoginDto } from './dto.js';
 import { ACCESS_COOKIE, REFRESH_COOKIE } from './auth.constants.js';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
+import { Public } from '../../common/decorators/public.decorator.js';
 
 const ACCESS_MAX_AGE_MS = 15 * 60 * 1000;
 const REFRESH_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
@@ -48,6 +39,7 @@ export class AuthController {
    * Força bruta por IP: 5 tentativas por minuto. A janela é por IP, então não
    * resolve ataque distribuído — é o teto que dá para pagar sem trava por conta.
    */
+  @Public()
   @Throttle({ default: { limit: 5, ttl: 60_000, blockDuration: 60_000 } })
   @Post('login')
   async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
@@ -64,11 +56,11 @@ export class AuthController {
    * de access vive, recarregar a página não gira o refresh token.
    */
   @Get('me')
-  @UseGuards(JwtAuthGuard)
   me(@CurrentUser() user: { sub: string; name: string; email: string; role: string }) {
     return { user: { id: user.sub, name: user.name, email: user.email, role: user.role } };
   }
 
+  @Public()
   @Post('refresh')
   async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies?.[REFRESH_COOKIE];
@@ -83,7 +75,6 @@ export class AuthController {
   }
 
   @Post('logout')
-  @UseGuards(JwtAuthGuard)
   async logout(
     @CurrentUser('jti') jti: string,
     @Req() req: Request,

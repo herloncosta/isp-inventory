@@ -3,13 +3,14 @@ import { UnauthorizedException } from '@nestjs/common';
 import { JwtAuthGuard } from './jwt-auth.guard.js';
 
 const jwtMock = { verifyAsync: vi.fn() };
+const reflectorMock = { getAllAndOverride: vi.fn() };
 const prismaMock = {
   revokedToken: { findUnique: vi.fn() },
   user: { findUnique: vi.fn() },
 };
 
 function guard() {
-  return new JwtAuthGuard(jwtMock as any, prismaMock as any);
+  return new JwtAuthGuard(reflectorMock as any, jwtMock as any, prismaMock as any);
 }
 
 function contextWith(
@@ -18,6 +19,8 @@ function contextWith(
 ) {
   const request: any = { headers, cookies };
   return {
+    getHandler: () => () => {},
+    getClass: () => class {},
     switchToHttp: () => ({ getRequest: () => request }),
     getRequest: () => request,
   } as any;
@@ -26,8 +29,16 @@ function contextWith(
 describe('JwtAuthGuard (RF-001)', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    reflectorMock.getAllAndOverride.mockReturnValue(false);
     prismaMock.revokedToken.findUnique.mockResolvedValue(null);
     prismaMock.user.findUnique.mockResolvedValue({ active: true });
+  });
+
+  it('libera rota marcada como pública sem nem olhar o token', async () => {
+    reflectorMock.getAllAndOverride.mockReturnValue(true);
+    await expect(guard().canActivate(contextWith({}))).resolves.toBe(true);
+    expect(jwtMock.verifyAsync).not.toHaveBeenCalled();
+    expect(prismaMock.user.findUnique).not.toHaveBeenCalled();
   });
 
   it('rejeita requisição sem token', async () => {

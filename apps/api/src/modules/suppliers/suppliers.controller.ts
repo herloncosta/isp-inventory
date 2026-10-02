@@ -1,13 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { SuppliersService } from './suppliers.service.js';
 import { CreateSupplierDto, UpdateSupplierDto } from './dto.js';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
-import { RolesGuard } from '../../common/guards/roles.guard.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
 import { Role } from '@isp/shared';
 
 @Controller('suppliers')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class SuppliersController {
   constructor(private suppliersService: SuppliersService) {}
 

@@ -1,13 +1,10 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { StockService } from './stock.service.js';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
-import { RolesGuard } from '../../common/guards/roles.guard.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
 import { Role } from '@isp/shared';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 
 @Controller('stock')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class StockController {
   constructor(private stockService: StockService) {}
 

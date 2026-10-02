@@ -1,14 +1,11 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { MovementsService } from './movements.service.js';
 import { CreateIssueDto, CreateReturnDto, CreateTransferDto } from './dto.js';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
-import { RolesGuard } from '../../common/guards/roles.guard.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import { Role } from '@isp/shared';
 
 @Controller('stock')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class MovementsController {
   constructor(private movementsService: MovementsService) {}
 
