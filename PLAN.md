@@ -158,7 +158,7 @@ Auditoria de código de 2026-10-02. Cada item é implementado em um commit próp
 
 ### Crítico
 
-- [ ] **S1** Remover `POST /stock/movements` e `POST /stock/serials` — `@Body() data: any` sem DTO permite mass assignment (`type`, `createdAt`, `id`) e cunhagem de saldo sem passar pelas entradas; nenhuma das duas é usada pelo front
+- [x] **S1** Remover `POST /stock/movements` e `POST /stock/serials` — `@Body() data: any` sem DTO permite mass assignment (`type`, `createdAt`, `id`) e cunhagem de saldo sem passar pelas entradas; nenhuma das duas é usada pelo front
 - [ ] **S2** `JWT_SECRET` obrigatório no boot — `?? 'dev-secret'` em `auth.module.ts` assina token forjável se a variável faltar em produção
 
 ### Alto
