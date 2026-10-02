@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { LocationsService } from './locations.service.js';
 import { CreateLocationDto, UpdateLocationDto } from './dto.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
@@ -14,7 +14,7 @@ export class LocationsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.locationsService.findOne(id);
   }
 
@@ -26,13 +26,13 @@ export class LocationsController {
 
   @Patch(':id')
   @Roles(Role.ADMIN, Role.ESTOQUISTA)
-  update(@Param('id') id: string, @Body() data: UpdateLocationDto) {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() data: UpdateLocationDto) {
     return this.locationsService.update(id, data);
   }
 
   @Delete(':id')
   @Roles(Role.ADMIN)
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.locationsService.remove(id);
   }
 }

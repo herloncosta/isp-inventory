@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { ProductsService } from './products.service.js';
 import { CreateProductDto, UpdateProductDto } from './dto.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
@@ -14,7 +14,7 @@ export class ProductsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.productsService.findOne(id);
   }
 
@@ -26,13 +26,13 @@ export class ProductsController {
 
   @Patch(':id')
   @Roles(Role.ADMIN, Role.ESTOQUISTA)
-  update(@Param('id') id: string, @Body() data: UpdateProductDto) {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() data: UpdateProductDto) {
     return this.productsService.update(id, data);
   }
 
   @Delete(':id')
   @Roles(Role.ADMIN)
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.productsService.remove(id);
   }
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { VehiclesService } from './vehicles.service.js';
 import { CreateVehicleDto, UpdateVehicleDto } from './dto.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
@@ -14,7 +14,7 @@ export class VehiclesController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.vehiclesService.findOne(id);
   }
 
@@ -26,13 +26,13 @@ export class VehiclesController {
 
   @Patch(':id')
   @Roles(Role.ADMIN, Role.ESTOQUISTA)
-  update(@Param('id') id: string, @Body() data: UpdateVehicleDto) {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() data: UpdateVehicleDto) {
     return this.vehiclesService.update(id, data);
   }
 
   @Delete(':id')
   @Roles(Role.ADMIN)
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.vehiclesService.remove(id);
   }
 }

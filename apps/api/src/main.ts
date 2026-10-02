@@ -27,7 +27,11 @@ async function bootstrap() {
   // morar em domínios distintos e o padrão 'same-origin' bloquearia a resposta.
   app.use(helmet({ crossOriginResourcePolicy: false }));
   app.use(cookieParser());
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  // whitelist já descarta o que não existe no DTO; forbid transforma esse
+  // descarte silencioso em 400 — campo a mais passa a ser erro visível.
+  app.useGlobalPipes(
+    new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }),
+  );
   await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
 }
 bootstrap();
