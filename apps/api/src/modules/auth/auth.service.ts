@@ -28,6 +28,10 @@ export class AuthService {
     if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
       throw new UnauthorizedException('Credenciais inválidas');
     }
+    // Conta desativada não entra: a senha pode estar certa e o acesso negado.
+    if (!user.active) {
+      throw new UnauthorizedException('Usuário desativado. Fale com o administrador.');
+    }
     const tokens = await this.issuePair(user);
     return {
       ...tokens,
@@ -40,6 +44,10 @@ export class AuthService {
     await this.revoke(payload.jti, REFRESH_TTL_SECONDS);
     const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
     if (!user) throw new UnauthorizedException('Usuário não encontrado');
+    // Sem isto, a aba de um usuário desativado ficaria renovando token em laço.
+    if (!user.active) {
+      throw new UnauthorizedException('Usuário desativado. Fale com o administrador.');
+    }
     const tokens = await this.issuePair(user);
     return {
       ...tokens,

@@ -3,7 +3,10 @@ import { UnauthorizedException } from '@nestjs/common';
 import { JwtAuthGuard } from './jwt-auth.guard.js';
 
 const jwtMock = { verifyAsync: vi.fn() };
-const prismaMock = { revokedToken: { findUnique: vi.fn() } };
+const prismaMock = {
+  revokedToken: { findUnique: vi.fn() },
+  user: { findUnique: vi.fn() },
+};
 
 function guard() {
   return new JwtAuthGuard(jwtMock as any, prismaMock as any);
@@ -24,6 +27,7 @@ describe('JwtAuthGuard (RF-001)', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     prismaMock.revokedToken.findUnique.mockResolvedValue(null);
+    prismaMock.user.findUnique.mockResolvedValue({ active: true });
   });
 
   it('rejeita requisição sem token', async () => {
@@ -50,6 +54,22 @@ describe('JwtAuthGuard (RF-001)', () => {
     await expect(guard().canActivate(contextWith({ authorization: 'Bearer r' }))).rejects.toThrow(
       UnauthorizedException,
     );
+  });
+
+  it('rejeita usuário desativado, mesmo com token válido e não revogado', async () => {
+    jwtMock.verifyAsync.mockResolvedValue({ sub: 'u1', typ: 'access', jti: 'j12' });
+    prismaMock.user.findUnique.mockResolvedValue({ active: false });
+    await expect(
+      guard().canActivate(contextWith({}, { isp_access_token: 'valido' })),
+    ).rejects.toThrow(UnauthorizedException);
+  });
+
+  it('rejeita usuário que não existe mais', async () => {
+    jwtMock.verifyAsync.mockResolvedValue({ sub: 'u1', typ: 'access', jti: 'j13' });
+    prismaMock.user.findUnique.mockResolvedValue(null);
+    await expect(
+      guard().canActivate(contextWith({ authorization: 'Bearer valido' })),
+    ).rejects.toThrow(UnauthorizedException);
   });
 
   it('rejeita sessão revogada (logout)', async () => {

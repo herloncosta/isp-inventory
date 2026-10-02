@@ -19,6 +19,12 @@ export class JwtAuthGuard implements CanActivate {
       if (payload.typ !== 'access') throw new UnauthorizedException('Tipo de token inválido');
       const revoked = await this.prisma.revokedToken.findUnique({ where: { jti: payload.jti } });
       if (revoked) throw new UnauthorizedException('Token revogado');
+      // Desativar precisa valer agora, e não só quando o token expira.
+      const user = await this.prisma.user.findUnique({
+        where: { id: payload.sub },
+        select: { active: true },
+      });
+      if (!user?.active) throw new UnauthorizedException('Usuário desativado');
       request.user = payload;
       return true;
     } catch (e) {

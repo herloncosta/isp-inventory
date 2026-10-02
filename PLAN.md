@@ -118,6 +118,15 @@ isp-inventory/
 - [x] Devolução com seleção de status
 - [x] Histórico com filtros avançados
 
+### Fase 10 — Gestão de Usuários (RF-014, RN-04)
+
+- [x] `users.active` + `users.deactivated_at` (migração aditiva, sem tocar em dados)
+- [x] `PATCH /users/:id` edita campos; senha só é trocada quando vem preenchida
+- [x] `PATCH /users/:id/status` desativa e reativa — **sem `DELETE /users`**
+- [x] Login, refresh e `JwtAuthGuard` recusam conta desativada
+- [x] Travas: não desativar a si mesmo, nem o último administrador ativo
+- [x] Front: tabela com estado, editar em popup, desativar com confirmação
+
 ### Fase 9 — Qualidade & CI
 
 - [x] Testes unitários backend (Vitest, 64 testes)
