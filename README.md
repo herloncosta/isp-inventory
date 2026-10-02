@@ -138,7 +138,7 @@ pnpm --filter api test:coverage  # com cobertura
 
 Regras de estoque puras (`canTransfer`, `findLowStock`, `hasDuplicateSerial`) vivem em `apps/api/src/modules/stock/stock.rules.ts` com cobertura em `stock.rules.spec.ts`.
 
-O backend tem 71 testes. O front **não tem runner de teste**: a verificação da interface é o `typecheck` do build, o Prettier, o detector de antipadrões e a inspeção em navegador. Colocar Vitest no `web` é uma decisão de stack ainda não tomada. A CI (`.github/workflows/ci.yml`) roda Prettier, testes da API e build da web em todo push para `main` e `develop`.
+O backend tem 94 testes em 14 arquivos. O front **não tem runner de teste**: a verificação da interface é o `typecheck` do build, o Prettier, o detector de antipadrões e a inspeção em navegador. Colocar Vitest no `web` é uma decisão de stack ainda não tomada. A CI (`.github/workflows/ci.yml`) roda Prettier, testes da API e build da web em todo push e pull request para `main` e `develop`.
 
 ## Sessão
 

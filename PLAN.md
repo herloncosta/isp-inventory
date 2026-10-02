@@ -22,32 +22,43 @@ isp-inventory/
 ├── apps/
 │   ├── api/                    # NestJS + Prisma 7
 │   │   ├── prisma/
-│   │   │   ├── schema.prisma
+│   │   │   ├── schema.prisma   # 10 models
+│   │   │   ├── migrations/     # 7 migrações
 │   │   │   └── seed.ts
 │   │   ├── src/
 │   │   │   ├── generated/      # Prisma client output
 │   │   │   ├── modules/
-│   │   │   │   ├── auth/
+│   │   │   │   ├── auth/       # login, refresh, cookies httpOnly
+│   │   │   │   ├── users/      # CRUD + desativação (sem DELETE)
 │   │   │   │   ├── products/
 │   │   │   │   ├── technicians/
+│   │   │   │   ├── vehicles/
 │   │   │   │   ├── suppliers/
-│   │   │   │   ├── stock/
+│   │   │   │   ├── locations/  # CENTRAL/VEHICLE
+│   │   │   │   ├── entries/    # manual, lote de seriais, fracionada
+│   │   │   │   ├── movements/  # transfers, issues, returns
+│   │   │   │   ├── stock/      # balances + stock.rules (regras puras)
 │   │   │   │   └── dashboard/
-│   │   │   ├── common/
+│   │   │   ├── common/         # guards, decorators, prisma-errors
 │   │   │   └── main.ts
 │   │   ├── prisma.config.ts
-│   │   └── package.json
+│   │   └── vitest.config.ts
 │   ├── web/                    # React + Vite + Tailwind
 │   │   ├── src/
-│   │   │   ├── pages/
-│   │   │   ├── components/
+│   │   │   ├── pages/          # 10 telas
+│   │   │   ├── components/     # um componente por arquivo (form/, movements/, ...)
+│   │   │   ├── features/       # tipos, constantes, hooks, parsers (sem JSX)
 │   │   │   ├── hooks/
 │   │   │   └── lib/
-│   │   └── package.json
-│   └── shared/                 # Tipos, DTOs, constantes
+│   │   ├── public/fonts/       # Archivo + Azeret Mono self-hosted
+│   │   ├── DESIGN.md
+│   │   └── PRODUCT.md
+│   └── shared/                 # Tipos, enums e rótulos em pt-BR
 │       ├── src/
 │       └── package.json
+├── .github/workflows/ci.yml    # prettier + testes API + build web
 ├── docker-compose.yml
+├── agents.md                   # SRS + status (fonte de verdade)
 ├── package.json
 └── tsconfig.base.json
 ```
@@ -56,12 +67,12 @@ isp-inventory/
 
 ### Fase 1 — Scaffold Base
 
-- [ ] Root `package.json` com workspaces (pnpm)
-- [ ] `docker-compose.yml` com PostgreSQL
-- [ ] `tsconfig.base.json` compartilhado
-- [ ] `apps/shared` com tipos e enums iniciais
-- [ ] `apps/api` — NestJS + Prisma 7 + `prisma.config.ts`
-- [ ] `apps/web` — Vite + React + TailwindCSS + React Query
+- [x] Root `package.json` com workspaces (pnpm)
+- [x] `docker-compose.yml` com PostgreSQL
+- [x] `tsconfig.base.json` compartilhado
+- [x] `apps/shared` com tipos e enums iniciais
+- [x] `apps/api` — NestJS + Prisma 7 + `prisma.config.ts`
+- [x] `apps/web` — Vite + React + TailwindCSS + React Query
 
 ### Fase 2 — Auth & RBAC (RF-001, RF-002)
 
@@ -118,13 +129,11 @@ isp-inventory/
 - [x] Devolução com seleção de status
 - [x] Histórico com filtros avançados
 
-### Fase 11 — Gestão de Locais (RF-015, RN-05)
+### Fase 9 — Qualidade & CI
 
-- [x] `remove` conta saldo, equipamento rastreado e histórico antes de excluir
-- [x] Recusa com 409 nomeando **o que** impede, não um erro genérico
-- [x] Histórico entra na conta: `stock_movements` não tem FK para o local
-- [x] `ConfirmAction` genérico (extraído do popup de desativar usuário)
-- [x] Front: LocationsPage com criar, editar e excluir com confirmação
+- [x] Testes unitários backend (Vitest, 94 testes / 14 arquivos)
+- [x] CI (GitHub Actions: prettier + testes API + build web)
+- [ ] Testes e2e
 
 ### Fase 10 — Gestão de Usuários (RF-014, RN-04)
 
@@ -135,19 +144,23 @@ isp-inventory/
 - [x] Travas: não desativar a si mesmo, nem o último administrador ativo
 - [x] Front: tabela com estado, editar em popup, desativar com confirmação
 
-### Fase 9 — Qualidade & CI
+### Fase 11 — Gestão de Locais (RF-015, RN-05)
 
-- [x] Testes unitários backend (Vitest, 64 testes)
-- [x] CI (GitHub Actions: prettier + testes API + build web)
-- [ ] Testes e2e
+- [x] `remove` conta saldo, equipamento rastreado e histórico antes de excluir
+- [x] Recusa com 409 nomeando **o que** impede, não um erro genérico
+- [x] Histórico entra na conta: `stock_movements` não tem FK para o local
+- [x] `ConfirmAction` genérico (extraído do popup de desativar usuário)
+- [x] Front: LocationsPage com criar, editar e excluir com confirmação
 
 ## Regras de Negócio
 
-| RN                                  | Onde           | Como                                                                        |
-| ----------------------------------- | -------------- | --------------------------------------------------------------------------- |
-| **RN-01** (serial/MAC único)        | `SerialItems`  | `@@unique([serialNumber])`, `@@unique([macAddress])` + validação no service |
-| **RN-02** (sem saldo negativo)      | `StockService` | Transação: check saldo → debita source → credita target, tudo atômico       |
-| **RN-03** (ferramentas rastreáveis) | `SerialItems`  | Ferramentas de alto valor ganham `SerialItem` vinculado ao técnico          |
+| RN                                  | Onde               | Como                                                                        |
+| ----------------------------------- | ------------------ | --------------------------------------------------------------------------- |
+| **RN-01** (serial/MAC único)        | `SerialItems`      | `@@unique([serialNumber])`, `@@unique([macAddress])` + validação no service |
+| **RN-02** (sem saldo negativo)      | `StockService`     | Transação: check saldo → debita source → credita target, tudo atômico       |
+| **RN-03** (ferramentas rastreáveis) | `SerialItems`      | Ferramentas de alto valor ganham `SerialItem` vinculado ao técnico          |
+| **RN-04** (usuário nunca excluído)  | `UsersService`     | `active`/`deactivated_at` + travas (si mesmo, último admin); só `PATCH`     |
+| **RN-05** (local só se vazio)       | `LocationsService` | `remove` conta saldo, seriais e histórico; 409 nomeando o que impede        |
 
 ## Prisma 7 — Configuração
 
@@ -167,8 +180,9 @@ const prisma = new PrismaClient({ adapter });
 
 ## Requisitos Não Funcionais
 
-- [ ] RNF-001: NestJS com Modular Architecture
-- [ ] RNF-002: PostgreSQL + Prisma ORM
-- [ ] RNF-003: SPA React + Vite + TailwindCSS + React Query
-- [ ] RNF-004: < 200ms para consultas de saldo/dashboard
-- [ ] RNF-005: Auditoria imutável (user_id, timestamp, tipo, quantidade/seriais)
+- [x] RNF-001: NestJS com Modular Architecture
+- [x] RNF-002: PostgreSQL + Prisma ORM
+- [x] RNF-003: SPA React + Vite + TailwindCSS + React Query
+- [ ] RNF-004: < 200ms para consultas de saldo/dashboard (sem medição/benchmark)
+- [x] RNF-005: Auditoria imutável (user_id, timestamp, tipo, quantidade/seriais)
+- [x] RNF-006: Tokens em cookie httpOnly/SameSite=Lax, rotação single-use + `revoked_tokens`
