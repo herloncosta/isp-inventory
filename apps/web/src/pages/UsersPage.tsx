@@ -5,7 +5,7 @@ import { apiFetch } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
 import UserStatus, { type UserRow } from '../components/users/UserStatus';
 import UserFormModal from '../components/users/UserFormModal';
-import ConfirmStatus from '../components/users/ConfirmStatus';
+import ConfirmAction from '../components/ConfirmAction';
 
 /**
  * Gestão de usuários: criar, editar e desativar. **Nunca excluir** — o log de
@@ -130,10 +130,24 @@ export default function UsersPage() {
       {editing && <UserFormModal user={editing} onClose={() => setEditing(null)} />}
 
       {confirming && (
-        <ConfirmStatus
-          user={confirming}
+        <ConfirmAction
+          title={confirming.active ? 'Desativar usuário' : 'Reativar usuário'}
+          destructive={confirming.active}
           pending={setStatus.isPending}
           error={setStatus.error as Error | null}
+          confirmLabel={confirming.active ? 'Desativar' : 'Reativar'}
+          message={
+            confirming.active ? (
+              <>
+                <strong>{confirming.name}</strong> deixa de conseguir entrar na hora. Os lançamentos
+                que ele registrou continuam com o nome dele — nada do histórico é apagado.
+              </>
+            ) : (
+              <>
+                <strong>{confirming.name}</strong> volta a conseguir entrar no sistema.
+              </>
+            )
+          }
           onCancel={() => setConfirming(null)}
           onConfirm={() => setStatus.mutate({ id: confirming.id, active: !confirming.active })}
         />
