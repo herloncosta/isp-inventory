@@ -8,6 +8,7 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import { AuthService } from './auth.service.js';
 import { LoginDto } from './dto.js';
@@ -43,6 +44,11 @@ function clearAuthCookies(res: Response) {
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  /**
+   * Força bruta por IP: 5 tentativas por minuto. A janela é por IP, então não
+   * resolve ataque distribuído — é o teto que dá para pagar sem trava por conta.
+   */
+  @Throttle({ default: { limit: 5, ttl: 60_000, blockDuration: 60_000 } })
   @Post('login')
   async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
     const { accessToken, refreshToken, user } = await this.authService.login(
