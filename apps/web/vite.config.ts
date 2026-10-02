@@ -4,7 +4,8 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   server: {
-    host: '0.0.0.0',
+    // loopback: dev não precisa expor o HMR do Vite para a rede
+    host: '127.0.0.1',
     port: 5173,
     proxy: {
       '/api': {
