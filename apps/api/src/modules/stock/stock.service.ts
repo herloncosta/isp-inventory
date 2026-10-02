@@ -13,6 +13,9 @@ export class StockService {
     return this.prisma.stockBalance.findMany({
       where: locationId ? { locationId } : undefined,
       include: { product: true, location: true },
+      // ponytail: teto fixo de 500 linhas, sem paginação — se o estoque passar
+      // disso a tela deixa de mostrar tudo; aí entram ?limit= e offset.
+      take: 500,
     });
   }
 
@@ -71,6 +74,8 @@ export class StockService {
         ...(filters?.productId && { productId: filters.productId }),
       },
       include: { product: true },
+      // mesmo teto de getBalances, sem paginação ainda
+      take: 500,
     });
   }
 }

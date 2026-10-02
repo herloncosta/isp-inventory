@@ -179,7 +179,7 @@ Auditoria de código de 2026-10-02. Cada item é implementado em um commit próp
 
 ### Baixo
 
-- [ ] **S13** `take` nas listagens (`balances`, `serials`) + CNPJ com formato `\d{14}`
+- [x] **S13** `take` nas listagens (`balances`, `serials`) + CNPJ com formato `\d{14}`
 - [ ] **S14** Infra dev amarrada em `127.0.0.1` (Postgres no compose, host do Vite)
 - [ ] **S15** CI com gate `pnpm audit --prod` e dependências vulneráveis atualizadas
 
