@@ -16,6 +16,9 @@ model User {
   // Usuário nunca é excluído: o histórico de auditoria aponta para ele.
   active        Boolean   @default(true)
   deactivatedAt DateTime? @map("deactivated_at")
+  // Incrementado a cada troca de senha ou cargo: os tokens já emitidos carregam
+  // o número de quando nasceram e passam a valer menos que o do banco.
+  tokenVersion  Int       @default(0)
   createdAt     DateTime  @default(now()) @map("created_at")
 
   @@map("users")

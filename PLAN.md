@@ -131,7 +131,7 @@ isp-inventory/
 
 ### Fase 9 — Qualidade & CI
 
-- [x] Testes unitários backend (Vitest, 94 testes / 14 arquivos)
+- [x] Testes unitários backend (Vitest, 113 testes / 15 arquivos)
 - [x] CI (GitHub Actions: prettier + testes API + build web)
 - [ ] Testes e2e
 
@@ -151,6 +151,37 @@ isp-inventory/
 - [x] Histórico entra na conta: `stock_movements` não tem FK para o local
 - [x] `ConfirmAction` genérico (extraído do popup de desativar usuário)
 - [x] Front: LocationsPage com criar, editar e excluir com confirmação
+
+## Segurança — Redução de Superfície de Ataque
+
+Auditoria de código de 2026-10-02. Cada item é implementado em um commit próprio, com testes verdes antes do commit.
+
+### Crítico
+
+- [x] **S1** Remover `POST /stock/movements` e `POST /stock/serials` — `@Body() data: any` sem DTO permite mass assignment (`type`, `createdAt`, `id`) e cunhagem de saldo sem passar pelas entradas; nenhuma das duas é usada pelo front
+- [x] **S2** `JWT_SECRET` obrigatório no boot — `?? 'dev-secret'` em `auth.module.ts` assina token forjável se a variável faltar em produção
+
+### Alto
+
+- [x] **S3** Rate limit em `/auth/login` (`@nestjs/throttler`) — sem trava de força bruta
+- [x] **S4** Escopo do `TECNICO` conforme RF-002 — `@Roles` em `GET /stock/balances`, `GET /stock/serials`, `GET /stock/movements` e `GET /dashboard`; `POST /stock/issues`/`returns` só aceitam origem do veículo do próprio técnico
+- [x] **S5** RN-02 atômica — `debit` faz `findUnique` + `update` em transações separadas lógicamente; `updateMany` com `quantity: { gte }` condicional
+- [x] **S6** CORS por allowlist (`CORS_ORIGINS`) em vez de `origin: true` com credenciais + `helmet` (security headers)
+
+### Médio
+
+- [x] **S7** Guards globais (`APP_GUARD`) + decorator `@Public()` — autenticação passa a ser fail-closed por padrão
+- [x] **S8** `tokenVersion` em `User` — troca de senha/cargo desativa as sessões existentes no ato; trava de último admin ativo também no `update` de cargo
+- [x] **S9** Cookie de refresh com `path: '/auth'` (não viaja em toda requisição) e `secure` não dependente só de `NODE_ENV`
+- [x] **S10** Login com timing uniforme (hash dummy quando o usuário não existe) + log de tentativa negada
+- [x] **S11** `ValidationPipe` com `forbidNonWhitelisted` e `@Param('id')` validado como UUID (P2023 deixa de virar 500)
+- [x] **S12** Política de senha: `MinLength(8)`
+
+### Baixo
+
+- [x] **S13** `take` nas listagens (`balances`, `serials`) + CNPJ com formato `\d{14}`
+- [x] **S14** Infra dev amarrada em `127.0.0.1` (Postgres no compose, host do Vite)
+- [x] **S15** CI com gate `pnpm audit --prod` e dependências vulneráveis atualizadas
 
 ## Regras de Negócio
 

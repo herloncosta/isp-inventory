@@ -1,7 +1,22 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { UnauthorizedException } from '@nestjs/common';
+import { Logger, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { AuthService } from './auth.service.js';
+
+// `vi.spyOn` não pega em import ESM: o mock embrulha o compare real e registra
+// as chamadas num array comum, que `vi.resetAllMocks` não zera.
+const { compareCalls } = vi.hoisted(() => ({ compareCalls: [] as string[] }));
+
+vi.mock('bcryptjs', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('bcryptjs')>();
+  return {
+    ...actual,
+    compare: (password: string, hash: string) => {
+      compareCalls.push(hash);
+      return actual.compare(password, hash);
+    },
+  };
+});
 
 const prismaMock = {
   user: { findUnique: vi.fn() },
@@ -19,11 +34,13 @@ const storedUser = {
   email: 'admin@isp.com',
   role: 'ADMIN',
   active: true,
+  tokenVersion: 0,
 };
 
 describe('AuthService.login (RF-001)', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    compareCalls.length = 0;
   });
 
   it('recusa login de usuário desativado, mesmo com a senha certa', async () => {
@@ -41,7 +58,7 @@ describe('AuthService.login (RF-001)', () => {
   });
 
   it('refresh de conta desativada não emite token novo', async () => {
-    jwtMock.verifyAsync.mockResolvedValue({ sub: 'u1', typ: 'refresh', jti: 'j1' });
+    jwtMock.verifyAsync.mockResolvedValue({ sub: 'u1', typ: 'refresh', jti: 'j1', tv: 0 });
     prismaMock.revokedToken.findUnique.mockResolvedValue(null);
     prismaMock.user.findUnique.mockResolvedValue({ ...storedUser, active: false });
 
@@ -85,6 +102,31 @@ describe('AuthService.login (RF-001)', () => {
       UnauthorizedException,
     );
   });
+
+  it('e-mail inexistente também roda o compare, para não vazar por timing', async () => {
+    prismaMock.user.findUnique.mockResolvedValue(null);
+
+    await expect(makeService().login('nao-existe@isp.com', 'qualquer')).rejects.toThrow(
+      UnauthorizedException,
+    );
+
+    // roda o mesmo compare, contra um hash bcrypt do mesmo custo (10)
+    expect(compareCalls).toHaveLength(1);
+    expect(compareCalls[0]).toMatch(/^\$2b\$10\$/);
+  });
+
+  it('tentativa negada vira log de warn, sem deixar quebrar linha pelo e-mail', async () => {
+    prismaMock.user.findUnique.mockResolvedValue(null);
+    const warn = vi.spyOn(Logger.prototype, 'warn');
+
+    await expect(
+      makeService().login('fulano@isp.com\nfalso-log: admin@isp.com', 'x'),
+    ).rejects.toThrow(UnauthorizedException);
+
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('fulano@isp.com falso-log:'));
+    expect(warn.mock.calls[0][0]).not.toContain('\n');
+    warn.mockRestore();
+  });
 });
 
 describe('AuthService.refresh (rotação)', () => {
@@ -93,7 +135,7 @@ describe('AuthService.refresh (rotação)', () => {
   });
 
   it('revoga o refresh usado e emite novo par', async () => {
-    jwtMock.verifyAsync.mockResolvedValue({ sub: 'u1', typ: 'refresh', jti: 'old-jti' });
+    jwtMock.verifyAsync.mockResolvedValue({ sub: 'u1', typ: 'refresh', jti: 'old-jti', tv: 0 });
     prismaMock.revokedToken.findUnique.mockResolvedValue(null);
     prismaMock.user.findUnique.mockResolvedValue({
       ...storedUser,
@@ -110,8 +152,17 @@ describe('AuthService.refresh (rotação)', () => {
     expect(result.refreshToken).toBe('refresh2');
   });
 
+  it('rejeita refresh emitido antes da troca de senha ou cargo', async () => {
+    jwtMock.verifyAsync.mockResolvedValue({ sub: 'u1', typ: 'refresh', jti: 'old-jti', tv: 0 });
+    prismaMock.revokedToken.findUnique.mockResolvedValue(null);
+    prismaMock.user.findUnique.mockResolvedValue({ ...storedUser, tokenVersion: 1 });
+
+    await expect(makeService().refresh('old-refresh')).rejects.toThrow(/Sessão expirada/);
+    expect(jwtMock.signAsync).not.toHaveBeenCalled();
+  });
+
   it('rejeita refresh já utilizado (revogado)', async () => {
-    jwtMock.verifyAsync.mockResolvedValue({ sub: 'u1', typ: 'refresh', jti: 'used-jti' });
+    jwtMock.verifyAsync.mockResolvedValue({ sub: 'u1', typ: 'refresh', jti: 'used-jti', tv: 0 });
     prismaMock.revokedToken.findUnique.mockResolvedValue({ jti: 'used-jti' });
     await expect(makeService().refresh('used-refresh')).rejects.toThrow(UnauthorizedException);
     expect(jwtMock.signAsync).not.toHaveBeenCalled();

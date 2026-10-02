@@ -1,13 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { SuppliersService } from './suppliers.service.js';
 import { CreateSupplierDto, UpdateSupplierDto } from './dto.js';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
-import { RolesGuard } from '../../common/guards/roles.guard.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
 import { Role } from '@isp/shared';
 
 @Controller('suppliers')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class SuppliersController {
   constructor(private suppliersService: SuppliersService) {}
 
@@ -17,7 +14,7 @@ export class SuppliersController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.suppliersService.findOne(id);
   }
 
@@ -29,13 +26,13 @@ export class SuppliersController {
 
   @Patch(':id')
   @Roles(Role.ADMIN, Role.ESTOQUISTA)
-  update(@Param('id') id: string, @Body() data: UpdateSupplierDto) {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() data: UpdateSupplierDto) {
     return this.suppliersService.update(id, data);
   }
 
   @Delete(':id')
   @Roles(Role.ADMIN)
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.suppliersService.remove(id);
   }
 }

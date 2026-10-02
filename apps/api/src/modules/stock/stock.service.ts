@@ -1,5 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Role } from '@isp/shared';
 import { PrismaService } from '../prisma.service.js';
+
+/** Quem está perguntando: o escopo do TECNICO sai daqui, nunca da query string. */
+type Viewer = { sub: string; role: string };
 
 @Injectable()
 export class StockService {
@@ -9,31 +13,42 @@ export class StockService {
     return this.prisma.stockBalance.findMany({
       where: locationId ? { locationId } : undefined,
       include: { product: true, location: true },
+      // ponytail: teto fixo de 500 linhas, sem paginação — se o estoque passar
+      // disso a tela deixa de mostrar tudo; aí entram ?limit= e offset.
+      take: 500,
     });
   }
 
   async getMyBalances(userId: string) {
-    const tech = await this.prisma.technician.findUnique({
-      where: { userId },
-      include: { vehicle: { include: { location: true } } },
-    });
-    const locationId = tech?.vehicle?.location?.id;
+    const locationId = await this.prisma.technicianLocationId(userId);
     if (!locationId) throw new NotFoundException('Técnico sem veículo ou local vinculado');
     return this.getBalances(locationId);
   }
 
-  async getMovements(filters?: {
-    locationId?: string;
-    productId?: string;
-    osNumber?: string;
-    type?: string;
-    from?: string;
-    to?: string;
-  }) {
+  async getMovements(
+    viewer: Viewer,
+    filters?: {
+      locationId?: string;
+      productId?: string;
+      osNumber?: string;
+      type?: string;
+      from?: string;
+      to?: string;
+    },
+  ) {
+    let locationId = filters?.locationId;
+    if (viewer.role === Role.TECNICO) {
+      const own = await this.prisma.technicianLocationId(viewer.sub);
+      // Técnico sem veículo próprio não tem histórico a ver — e, principalmente,
+      // não pode cair num filtro sem local e ler o movimento da empresa inteira.
+      if (!own) return [];
+      locationId = own;
+    }
+
     return this.prisma.stockMovement.findMany({
       where: {
-        ...(filters?.locationId && {
-          OR: [{ sourceLocationId: filters.locationId }, { targetLocationId: filters.locationId }],
+        ...(locationId && {
+          OR: [{ sourceLocationId: locationId }, { targetLocationId: locationId }],
         }),
         ...(filters?.productId && { productId: filters.productId }),
         ...(filters?.osNumber && { osNumber: filters.osNumber }),
@@ -59,77 +74,8 @@ export class StockService {
         ...(filters?.productId && { productId: filters.productId }),
       },
       include: { product: true },
+      // mesmo teto de getBalances, sem paginação ainda
+      take: 500,
     });
-  }
-
-  async createMovement(data: {
-    sourceLocationId?: string;
-    targetLocationId?: string;
-    productId: string;
-    quantity: number;
-    osNumber?: string;
-    type: string;
-    supplierId?: string;
-    createdBy: string;
-  }) {
-    if (data.quantity <= 0) throw new BadRequestException('Quantidade deve ser positiva');
-
-    return this.prisma.$transaction(async (tx) => {
-      if (data.sourceLocationId) {
-        const balance = await tx.stockBalance.findUnique({
-          where: {
-            locationId_productId: {
-              locationId: data.sourceLocationId,
-              productId: data.productId,
-            },
-          },
-        });
-        if (!balance || balance.quantity < data.quantity) {
-          throw new BadRequestException('Saldo insuficiente no local de origem');
-        }
-        await tx.stockBalance.update({
-          where: { id: balance.id },
-          data: { quantity: { decrement: data.quantity } },
-        });
-      }
-
-      if (data.targetLocationId) {
-        await tx.stockBalance.upsert({
-          where: {
-            locationId_productId: {
-              locationId: data.targetLocationId,
-              productId: data.productId,
-            },
-          },
-          update: { quantity: { increment: data.quantity } },
-          create: {
-            locationId: data.targetLocationId,
-            productId: data.productId,
-            quantity: data.quantity,
-          },
-        });
-      }
-
-      return tx.stockMovement.create({ data });
-    });
-  }
-
-  async createSerialItem(data: {
-    productId: string;
-    serialNumber: string;
-    macAddress?: string;
-    currentLocationId: string;
-  }) {
-    const existing = await this.prisma.serialItem.findFirst({
-      where: {
-        OR: [
-          { serialNumber: data.serialNumber },
-          ...(data.macAddress ? [{ macAddress: data.macAddress }] : []),
-        ],
-      },
-    });
-    if (existing) throw new BadRequestException('Serial ou MAC já cadastrado');
-
-    return this.prisma.serialItem.create({ data });
   }
 }

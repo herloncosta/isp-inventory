@@ -1,16 +1,26 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../modules/prisma.service.js';
 import { ACCESS_COOKIE } from '../../modules/auth/auth.constants.js';
+import { IS_PUBLIC_KEY } from '../decorators/public.decorator.js';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
   constructor(
+    private reflector: Reflector,
     private jwtService: JwtService,
     private prisma: PrismaService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    // Guard global: a rota só é pública quando diz que é.
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (isPublic) return true;
+
     const request = context.switchToHttp().getRequest();
     const token = this.extractToken(request);
     if (!token) throw new UnauthorizedException('Token não fornecido');
@@ -22,9 +32,12 @@ export class JwtAuthGuard implements CanActivate {
       // Desativar precisa valer agora, e não só quando o token expira.
       const user = await this.prisma.user.findUnique({
         where: { id: payload.sub },
-        select: { active: true },
+        select: { active: true, tokenVersion: true },
       });
       if (!user?.active) throw new UnauthorizedException('Usuário desativado');
+      // Troca de senha/cargo sobe tokenVersion: a sessão antiga morre no ato,
+      // sem esperar os 15 minutos do access token vencer.
+      if (payload.tv !== user.tokenVersion) throw new UnauthorizedException('Sessão expirada');
       request.user = payload;
       return true;
     } catch (e) {

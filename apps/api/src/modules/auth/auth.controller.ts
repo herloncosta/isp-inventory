@@ -1,22 +1,27 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Req,
-  Res,
-  UnauthorizedException,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res, UnauthorizedException } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import { AuthService } from './auth.service.js';
 import { LoginDto } from './dto.js';
 import { ACCESS_COOKIE, REFRESH_COOKIE } from './auth.constants.js';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
+import { Public } from '../../common/decorators/public.decorator.js';
 
 const ACCESS_MAX_AGE_MS = 15 * 60 * 1000;
 const REFRESH_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+
+/** O refresh só interessa aos endpoints de /auth: não precisa viajar no resto. */
+const REFRESH_PATH = '/auth';
+
+/**
+ * `NODE_ENV` decide por padrão; `COOKIE_SECURE` sobrepõe quando o deploy termina
+ * atrás de proxy ou túnel e o valor de `NODE_ENV` não conta a história inteira.
+ */
+function cookieSecure(): boolean {
+  // string vazia conta como "não definido" — é o valor que o .env.example traz.
+  if (process.env.COOKIE_SECURE) return process.env.COOKIE_SECURE === 'true';
+  return process.env.NODE_ENV === 'production';
+}
 
 /**
  * Access e refresh viajam nos dois cookies httpOnly: nenhum token é legível por
@@ -26,16 +31,24 @@ const REFRESH_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 function setAuthCookies(res: Response, accessToken: string, refreshToken: string) {
   const base = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: cookieSecure(),
     sameSite: 'lax' as const,
     path: '/',
   };
   res.cookie(ACCESS_COOKIE, accessToken, { ...base, maxAge: ACCESS_MAX_AGE_MS });
-  res.cookie(REFRESH_COOKIE, refreshToken, { ...base, maxAge: REFRESH_MAX_AGE_MS });
+  // Varre o refresh antigo que ficava em path '/': sem isto os dois chegariam
+  // juntos em /auth/refresh e o cookie do path errado poderia vencer.
+  res.clearCookie(REFRESH_COOKIE, { path: '/' });
+  res.cookie(REFRESH_COOKIE, refreshToken, {
+    ...base,
+    path: REFRESH_PATH,
+    maxAge: REFRESH_MAX_AGE_MS,
+  });
 }
 
 function clearAuthCookies(res: Response) {
   res.clearCookie(ACCESS_COOKIE, { path: '/' });
+  res.clearCookie(REFRESH_COOKIE, { path: REFRESH_PATH });
   res.clearCookie(REFRESH_COOKIE, { path: '/' });
 }
 
@@ -43,6 +56,12 @@ function clearAuthCookies(res: Response) {
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  /**
+   * Força bruta por IP: 5 tentativas por minuto. A janela é por IP, então não
+   * resolve ataque distribuído — é o teto que dá para pagar sem trava por conta.
+   */
+  @Public()
+  @Throttle({ default: { limit: 5, ttl: 60_000, blockDuration: 60_000 } })
   @Post('login')
   async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
     const { accessToken, refreshToken, user } = await this.authService.login(
@@ -58,11 +77,11 @@ export class AuthController {
    * de access vive, recarregar a página não gira o refresh token.
    */
   @Get('me')
-  @UseGuards(JwtAuthGuard)
   me(@CurrentUser() user: { sub: string; name: string; email: string; role: string }) {
     return { user: { id: user.sub, name: user.name, email: user.email, role: user.role } };
   }
 
+  @Public()
   @Post('refresh')
   async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies?.[REFRESH_COOKIE];
@@ -77,7 +96,6 @@ export class AuthController {
   }
 
   @Post('logout')
-  @UseGuards(JwtAuthGuard)
   async logout(
     @CurrentUser('jti') jti: string,
     @Req() req: Request,

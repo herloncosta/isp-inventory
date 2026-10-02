@@ -1,13 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { VehiclesService } from './vehicles.service.js';
 import { CreateVehicleDto, UpdateVehicleDto } from './dto.js';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
-import { RolesGuard } from '../../common/guards/roles.guard.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
 import { Role } from '@isp/shared';
 
 @Controller('vehicles')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class VehiclesController {
   constructor(private vehiclesService: VehiclesService) {}
 
@@ -17,7 +14,7 @@ export class VehiclesController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.vehiclesService.findOne(id);
   }
 
@@ -29,13 +26,13 @@ export class VehiclesController {
 
   @Patch(':id')
   @Roles(Role.ADMIN, Role.ESTOQUISTA)
-  update(@Param('id') id: string, @Body() data: UpdateVehicleDto) {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() data: UpdateVehicleDto) {
     return this.vehiclesService.update(id, data);
   }
 
   @Delete(':id')
   @Roles(Role.ADMIN)
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.vehiclesService.remove(id);
   }
 }

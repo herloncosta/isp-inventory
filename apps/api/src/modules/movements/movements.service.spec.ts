@@ -1,13 +1,17 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import { Role } from '@isp/shared';
 import { MovementsService } from './movements.service.js';
 
 const txMock = {
-  stockBalance: { findUnique: vi.fn(), update: vi.fn(), upsert: vi.fn() },
+  stockBalance: { findUnique: vi.fn(), update: vi.fn(), updateMany: vi.fn(), upsert: vi.fn() },
   serialItem: { findMany: vi.fn(), updateMany: vi.fn() },
   stockMovement: { create: vi.fn() },
 };
-const prismaMock = { $transaction: vi.fn((cb: any) => cb(txMock)) };
+const prismaMock = {
+  $transaction: vi.fn((cb: any) => cb(txMock)),
+  technicianLocationId: vi.fn(),
+};
 
 function makeService() {
   return new MovementsService(prismaMock as any);
@@ -17,7 +21,7 @@ describe('MovementsService.transfer (RF-009)', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     prismaMock.$transaction.mockImplementation((cb: any) => cb(txMock));
-    txMock.stockBalance.findUnique.mockResolvedValue({ id: 'b1', quantity: 10 });
+    txMock.stockBalance.updateMany.mockResolvedValue({ count: 1 });
     txMock.serialItem.findMany.mockResolvedValue([]);
     txMock.stockMovement.create.mockResolvedValue({ id: 'm1' });
   });
@@ -29,10 +33,14 @@ describe('MovementsService.transfer (RF-009)', () => {
       productId: 'p1',
       quantity: 4,
       createdBy: 'u1',
+      role: Role.ESTOQUISTA,
     });
 
-    expect(txMock.stockBalance.update).toHaveBeenCalledWith(
-      expect.objectContaining({ data: { quantity: { decrement: 4 } } }),
+    expect(txMock.stockBalance.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ quantity: { gte: 4 } }),
+        data: { quantity: { decrement: 4 } },
+      }),
     );
     expect(txMock.stockBalance.upsert).toHaveBeenCalledWith(
       expect.objectContaining({ update: { quantity: { increment: 4 } } }),
@@ -43,7 +51,7 @@ describe('MovementsService.transfer (RF-009)', () => {
   });
 
   it('bloqueia saldo insuficiente', async () => {
-    txMock.stockBalance.findUnique.mockResolvedValue({ id: 'b1', quantity: 2 });
+    txMock.stockBalance.updateMany.mockResolvedValue({ count: 0 });
     await expect(
       makeService().transfer({
         sourceLocationId: 'central',
@@ -51,8 +59,10 @@ describe('MovementsService.transfer (RF-009)', () => {
         productId: 'p1',
         quantity: 5,
         createdBy: 'u1',
+        role: Role.ESTOQUISTA,
       }),
     ).rejects.toThrow(BadRequestException);
+    expect(txMock.stockMovement.create).not.toHaveBeenCalled();
   });
 
   it('rejeita origem igual ao destino', async () => {
@@ -63,6 +73,7 @@ describe('MovementsService.transfer (RF-009)', () => {
         productId: 'p1',
         quantity: 1,
         createdBy: 'u1',
+        role: Role.ESTOQUISTA,
       }),
     ).rejects.toThrow(BadRequestException);
     expect(prismaMock.$transaction).not.toHaveBeenCalled();
@@ -79,6 +90,7 @@ describe('MovementsService.transfer (RF-009)', () => {
       quantity: 1,
       serialNumbers: ['SN1'],
       createdBy: 'u1',
+      role: Role.ESTOQUISTA,
     });
     expect(txMock.serialItem.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({ data: { currentLocationId: 'carro1' } }),
@@ -97,6 +109,7 @@ describe('MovementsService.transfer (RF-009)', () => {
         quantity: 1,
         serialNumbers: ['SN1'],
         createdBy: 'u1',
+        role: Role.ESTOQUISTA,
       }),
     ).rejects.toThrow(BadRequestException);
   });
@@ -106,7 +119,7 @@ describe('MovementsService.issue (RF-010)', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     prismaMock.$transaction.mockImplementation((cb: any) => cb(txMock));
-    txMock.stockBalance.findUnique.mockResolvedValue({ id: 'b1', quantity: 10 });
+    txMock.stockBalance.updateMany.mockResolvedValue({ count: 1 });
     txMock.stockMovement.create.mockResolvedValue({ id: 'm2' });
   });
 
@@ -121,6 +134,7 @@ describe('MovementsService.issue (RF-010)', () => {
       osNumber: 'OS-123',
       serialNumbers: ['SN1'],
       createdBy: 'u1',
+      role: Role.ESTOQUISTA,
     });
     expect(txMock.serialItem.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({ data: { status: 'IN_USE', osNumber: 'OS-123' } }),
@@ -141,6 +155,7 @@ describe('MovementsService.issue (RF-010)', () => {
         osNumber: 'OS-1',
         serialNumbers: ['SN1'],
         createdBy: 'u1',
+        role: Role.ESTOQUISTA,
       }),
     ).rejects.toThrow(BadRequestException);
   });
@@ -150,7 +165,7 @@ describe('MovementsService.return (RF-011)', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     prismaMock.$transaction.mockImplementation((cb: any) => cb(txMock));
-    txMock.stockBalance.findUnique.mockResolvedValue({ id: 'b1', quantity: 5 });
+    txMock.stockBalance.updateMany.mockResolvedValue({ count: 1 });
     txMock.stockMovement.create.mockResolvedValue({ id: 'm3' });
   });
 
@@ -166,6 +181,7 @@ describe('MovementsService.return (RF-011)', () => {
       condition: 'DEFECTIVE' as any,
       serialNumbers: ['SN1'],
       createdBy: 'u1',
+      role: Role.ESTOQUISTA,
     });
     expect(txMock.serialItem.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({ data: { status: 'DEFECTIVE', currentLocationId: 'central' } }),
@@ -173,5 +189,76 @@ describe('MovementsService.return (RF-011)', () => {
     expect(txMock.stockMovement.create).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ type: 'DEVOLUCAO' }) }),
     );
+  });
+});
+
+describe('MovementsService escopo do TECNICO (RF-002)', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    prismaMock.$transaction.mockImplementation((cb: any) => cb(txMock));
+    txMock.stockBalance.updateMany.mockResolvedValue({ count: 1 });
+    txMock.stockMovement.create.mockResolvedValue({ id: 'm4' });
+  });
+
+  it('deixa o técnico dar baixa no estoque do próprio veículo', async () => {
+    prismaMock.technicianLocationId.mockResolvedValue('carro1');
+
+    await makeService().issue({
+      sourceLocationId: 'carro1',
+      productId: 'p1',
+      quantity: 1,
+      osNumber: 'OS-9',
+      role: Role.TECNICO,
+      createdBy: 'u-tec',
+    });
+
+    expect(txMock.stockMovement.create).toHaveBeenCalled();
+  });
+
+  it('recusa técnico debitando da Central', async () => {
+    prismaMock.technicianLocationId.mockResolvedValue('carro1');
+
+    await expect(
+      makeService().issue({
+        sourceLocationId: 'central',
+        productId: 'p1',
+        quantity: 1,
+        osNumber: 'OS-9',
+        role: Role.TECNICO,
+        createdBy: 'u-tec',
+      }),
+    ).rejects.toThrow(ForbiddenException);
+    expect(prismaMock.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('recusa técnico sem veículo vinculado — sem local, não há estoque a movimentar', async () => {
+    prismaMock.technicianLocationId.mockResolvedValue(null);
+
+    await expect(
+      makeService().return({
+        sourceLocationId: 'central',
+        targetLocationId: 'carro1',
+        productId: 'p1',
+        quantity: 1,
+        condition: 'AVAILABLE' as any,
+        role: Role.TECNICO,
+        createdBy: 'u-tec',
+      }),
+    ).rejects.toThrow(ForbiddenException);
+    expect(prismaMock.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('deixa ESTOQUISTA debitar de qualquer local', async () => {
+    await makeService().issue({
+      sourceLocationId: 'central',
+      productId: 'p1',
+      quantity: 1,
+      osNumber: 'OS-9',
+      role: Role.ESTOQUISTA,
+      createdBy: 'u-estoquista',
+    });
+
+    expect(prismaMock.technicianLocationId).not.toHaveBeenCalled();
+    expect(txMock.stockMovement.create).toHaveBeenCalled();
   });
 });

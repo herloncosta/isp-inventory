@@ -1,8 +1,6 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { UsersService } from './users.service.js';
 import { CreateUserDto, SetUserStatusDto, UpdateUserDto } from './dto.js';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
-import { RolesGuard } from '../../common/guards/roles.guard.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import { Role } from '@isp/shared';
@@ -12,7 +10,6 @@ import { Role } from '@isp/shared';
  * aqui não existe DELETE: só `PATCH /:id/status` desativa e reativa.
  */
 @Controller('users')
-@UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.ADMIN)
 export class UsersController {
   constructor(private usersService: UsersService) {}
@@ -23,7 +20,7 @@ export class UsersController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.findOne(id);
   }
 
@@ -33,13 +30,13 @@ export class UsersController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateUserDto) {
     return this.usersService.update(id, dto);
   }
 
   @Patch(':id/status')
   setStatus(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: SetUserStatusDto,
     @CurrentUser('sub') actingUserId: string,
   ) {

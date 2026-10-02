@@ -1,13 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { TechniciansService } from './technicians.service.js';
 import { CreateTechnicianDto, UpdateTechnicianDto } from './dto.js';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
-import { RolesGuard } from '../../common/guards/roles.guard.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
 import { Role } from '@isp/shared';
 
 @Controller('technicians')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class TechniciansController {
   constructor(private techniciansService: TechniciansService) {}
 
@@ -17,7 +14,7 @@ export class TechniciansController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.techniciansService.findOne(id);
   }
 
@@ -29,13 +26,13 @@ export class TechniciansController {
 
   @Patch(':id')
   @Roles(Role.ADMIN, Role.ESTOQUISTA)
-  update(@Param('id') id: string, @Body() data: UpdateTechnicianDto) {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() data: UpdateTechnicianDto) {
     return this.techniciansService.update(id, data);
   }
 
   @Delete(':id')
   @Roles(Role.ADMIN)
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.techniciansService.remove(id);
   }
 }

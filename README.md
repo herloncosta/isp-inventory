@@ -94,6 +94,8 @@ O front chama a API em `/api/*`, e o proxy do Vite (`apps/web/vite.config.ts`) e
 
 Para apontar a outro host (produção, por exemplo), defina `VITE_API_URL` com a raiz da API, ex.: `VITE_API_URL=https://api.exemplo.com`. Sem essa variável, vale `/api`.
 
+E, do lado da API, `CORS_ORIGINS` com as origens liberadas (lista separada por vírgula). Sem ela a API não emite CORS nenhum — é o padrão, e é o que basta enquanto front e API compartilham origem.
+
 ## Variáveis de ambiente
 
 Copie `.env.example` para `.env` e ajuste:
@@ -138,11 +140,13 @@ pnpm --filter api test:coverage  # com cobertura
 
 Regras de estoque puras (`canTransfer`, `findLowStock`, `hasDuplicateSerial`) vivem em `apps/api/src/modules/stock/stock.rules.ts` com cobertura em `stock.rules.spec.ts`.
 
-O backend tem 94 testes em 14 arquivos. O front **não tem runner de teste**: a verificação da interface é o `typecheck` do build, o Prettier, o detector de antipadrões e a inspeção em navegador. Colocar Vitest no `web` é uma decisão de stack ainda não tomada. A CI (`.github/workflows/ci.yml`) roda Prettier, testes da API e build da web em todo push e pull request para `main` e `develop`.
+O backend tem 113 testes em 15 arquivos. O front **não tem runner de teste**: a verificação da interface é o `typecheck` do build, o Prettier, o detector de antipadrões e a inspeção em navegador. Colocar Vitest no `web` é uma decisão de stack ainda não tomada. A CI (`.github/workflows/ci.yml`) roda o gate de `pnpm audit --prod`, Prettier, testes da API e build da web em todo push e pull request para `main` e `develop`.
 
 ## Sessão
 
 Login e refresh guardam access (15min) e refresh (7d) em **cookies httpOnly**, nenhum dos dois devolvido no corpo da resposta. O `GET /auth/me` devolve o usuário autenticado; o browser envia os cookies sozinho, então nenhum token é legível por JavaScript. Recarregar a página não gira o refresh token.
+
+O cookie de refresh vai em `path: /auth`, então ele só acompanha as chamadas de login, refresh e logout — o resto da API vê só o access. `COOKIE_SECURE` força o atributo `Secure` nos dois sentidos quando `NODE_ENV` não basta (proxy, túnel); vazio, ele segue o `NODE_ENV`.
 
 ## Workflow Git
 

@@ -16,4 +16,16 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   async onModuleDestroy() {
     await this.$disconnect();
   }
+
+  /**
+   * Local do veículo onde o técnico trabalha. É a chave de todo escopo do
+   * perfil TECNICO: quem não tem vínculo não enxerga estoque nenhum.
+   */
+  async technicianLocationId(userId: string): Promise<string | null> {
+    const technician = await this.technician.findUnique({
+      where: { userId },
+      include: { vehicle: { include: { location: true } } },
+    });
+    return technician?.vehicle?.location?.id ?? null;
+  }
 }

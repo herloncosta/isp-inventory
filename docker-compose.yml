@@ -7,7 +7,9 @@ services:
       POSTGRES_PASSWORD: isp_password
       POSTGRES_DB: isp_inventory
     ports:
-      - "5432:5432"
+      # só na loopback: em dev o Postgres não precisa (nem pode) ser alcançável
+      # da rede, e a senha do compose é pública no repositório
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
