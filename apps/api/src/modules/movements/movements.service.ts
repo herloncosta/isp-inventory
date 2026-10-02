@@ -8,8 +8,7 @@ type Actor = { createdBy: string; role: Role };
 
 interface Tx {
   stockBalance: {
-    findUnique: (args: any) => Promise<{ id: string; quantity: number } | null>;
-    update: (args: any) => Promise<unknown>;
+    updateMany: (args: any) => Promise<{ count: number }>;
     upsert: (args: any) => Promise<unknown>;
   };
   serialItem: {
@@ -128,17 +127,20 @@ export class MovementsService {
     }
   }
 
+  /**
+   * RN-02: o saldo só é conferido e debitado numa única instrução. O par
+   * `findUnique` + `update` deixava duas transações concorrentes lerem o mesmo
+   * saldo, ambas passarem na checagem e ambos os débitos se aplicarem — saldo
+   * negativo. `updateMany` com `gte` trava a linha e só decrementa se ainda houver.
+   */
   private async debit(tx: Tx, locationId: string, productId: string, quantity: number) {
-    const balance = await tx.stockBalance.findUnique({
-      where: { locationId_productId: { locationId, productId } },
-    });
-    if (!balance || balance.quantity < quantity) {
-      throw new BadRequestException('Saldo insuficiente no local de origem');
-    }
-    await tx.stockBalance.update({
-      where: { id: balance.id },
+    const debited = await tx.stockBalance.updateMany({
+      where: { locationId, productId, quantity: { gte: quantity } },
       data: { quantity: { decrement: quantity } },
     });
+    if (debited.count === 0) {
+      throw new BadRequestException('Saldo insuficiente no local de origem');
+    }
   }
 
   private async credit(tx: Tx, locationId: string, productId: string, quantity: number) {

@@ -4,7 +4,7 @@ import { Role } from '@isp/shared';
 import { MovementsService } from './movements.service.js';
 
 const txMock = {
-  stockBalance: { findUnique: vi.fn(), update: vi.fn(), upsert: vi.fn() },
+  stockBalance: { findUnique: vi.fn(), update: vi.fn(), updateMany: vi.fn(), upsert: vi.fn() },
   serialItem: { findMany: vi.fn(), updateMany: vi.fn() },
   stockMovement: { create: vi.fn() },
 };
@@ -21,7 +21,7 @@ describe('MovementsService.transfer (RF-009)', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     prismaMock.$transaction.mockImplementation((cb: any) => cb(txMock));
-    txMock.stockBalance.findUnique.mockResolvedValue({ id: 'b1', quantity: 10 });
+    txMock.stockBalance.updateMany.mockResolvedValue({ count: 1 });
     txMock.serialItem.findMany.mockResolvedValue([]);
     txMock.stockMovement.create.mockResolvedValue({ id: 'm1' });
   });
@@ -36,8 +36,11 @@ describe('MovementsService.transfer (RF-009)', () => {
       role: Role.ESTOQUISTA,
     });
 
-    expect(txMock.stockBalance.update).toHaveBeenCalledWith(
-      expect.objectContaining({ data: { quantity: { decrement: 4 } } }),
+    expect(txMock.stockBalance.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ quantity: { gte: 4 } }),
+        data: { quantity: { decrement: 4 } },
+      }),
     );
     expect(txMock.stockBalance.upsert).toHaveBeenCalledWith(
       expect.objectContaining({ update: { quantity: { increment: 4 } } }),
@@ -48,7 +51,7 @@ describe('MovementsService.transfer (RF-009)', () => {
   });
 
   it('bloqueia saldo insuficiente', async () => {
-    txMock.stockBalance.findUnique.mockResolvedValue({ id: 'b1', quantity: 2 });
+    txMock.stockBalance.updateMany.mockResolvedValue({ count: 0 });
     await expect(
       makeService().transfer({
         sourceLocationId: 'central',
@@ -59,6 +62,7 @@ describe('MovementsService.transfer (RF-009)', () => {
         role: Role.ESTOQUISTA,
       }),
     ).rejects.toThrow(BadRequestException);
+    expect(txMock.stockMovement.create).not.toHaveBeenCalled();
   });
 
   it('rejeita origem igual ao destino', async () => {
@@ -115,7 +119,7 @@ describe('MovementsService.issue (RF-010)', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     prismaMock.$transaction.mockImplementation((cb: any) => cb(txMock));
-    txMock.stockBalance.findUnique.mockResolvedValue({ id: 'b1', quantity: 10 });
+    txMock.stockBalance.updateMany.mockResolvedValue({ count: 1 });
     txMock.stockMovement.create.mockResolvedValue({ id: 'm2' });
   });
 
@@ -161,7 +165,7 @@ describe('MovementsService.return (RF-011)', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     prismaMock.$transaction.mockImplementation((cb: any) => cb(txMock));
-    txMock.stockBalance.findUnique.mockResolvedValue({ id: 'b1', quantity: 5 });
+    txMock.stockBalance.updateMany.mockResolvedValue({ count: 1 });
     txMock.stockMovement.create.mockResolvedValue({ id: 'm3' });
   });
 
@@ -192,7 +196,7 @@ describe('MovementsService escopo do TECNICO (RF-002)', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     prismaMock.$transaction.mockImplementation((cb: any) => cb(txMock));
-    txMock.stockBalance.findUnique.mockResolvedValue({ id: 'b1', quantity: 10 });
+    txMock.stockBalance.updateMany.mockResolvedValue({ count: 1 });
     txMock.stockMovement.create.mockResolvedValue({ id: 'm4' });
   });
 
