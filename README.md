@@ -94,6 +94,8 @@ O front chama a API em `/api/*`, e o proxy do Vite (`apps/web/vite.config.ts`) e
 
 Para apontar a outro host (produção, por exemplo), defina `VITE_API_URL` com a raiz da API, ex.: `VITE_API_URL=https://api.exemplo.com`. Sem essa variável, vale `/api`.
 
+E, do lado da API, `CORS_ORIGINS` com as origens liberadas (lista separada por vírgula). Sem ela a API não emite CORS nenhum — é o padrão, e é o que basta enquanto front e API compartilham origem.
+
 ## Variáveis de ambiente
 
 Copie `.env.example` para `.env` e ajuste:

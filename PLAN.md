@@ -166,7 +166,7 @@ Auditoria de código de 2026-10-02. Cada item é implementado em um commit próp
 - [x] **S3** Rate limit em `/auth/login` (`@nestjs/throttler`) — sem trava de força bruta
 - [x] **S4** Escopo do `TECNICO` conforme RF-002 — `@Roles` em `GET /stock/balances`, `GET /stock/serials`, `GET /stock/movements` e `GET /dashboard`; `POST /stock/issues`/`returns` só aceitam origem do veículo do próprio técnico
 - [x] **S5** RN-02 atômica — `debit` faz `findUnique` + `update` em transações separadas lógicamente; `updateMany` com `quantity: { gte }` condicional
-- [ ] **S6** CORS por allowlist (`CORS_ORIGINS`) em vez de `origin: true` com credenciais + `helmet` (security headers)
+- [x] **S6** CORS por allowlist (`CORS_ORIGINS`) em vez de `origin: true` com credenciais + `helmet` (security headers)
 
 ### Médio
 
