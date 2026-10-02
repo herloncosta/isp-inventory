@@ -118,6 +118,14 @@ isp-inventory/
 - [x] Devolução com seleção de status
 - [x] Histórico com filtros avançados
 
+### Fase 11 — Gestão de Locais (RF-015, RN-05)
+
+- [x] `remove` conta saldo, equipamento rastreado e histórico antes de excluir
+- [x] Recusa com 409 nomeando **o que** impede, não um erro genérico
+- [x] Histórico entra na conta: `stock_movements` não tem FK para o local
+- [x] `ConfirmAction` genérico (extraído do popup de desativar usuário)
+- [x] Front: LocationsPage com criar, editar e excluir com confirmação
+
 ### Fase 10 — Gestão de Usuários (RF-014, RN-04)
 
 - [x] `users.active` + `users.deactivated_at` (migração aditiva, sem tocar em dados)

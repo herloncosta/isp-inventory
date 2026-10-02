@@ -162,6 +162,7 @@ Prover um sistema simples, performático e confiável para gerenciamento de insu
 ### Pendente
 
 - [x] Gestão de usuários: criar, editar, desativar/reativar (RF-014, RN-04) — exclusão proibida por auditoria
+- [x] Gestão de locais: criar, editar, excluir só quando vazio, com confirmação (RF-015, RN-05)
 - [ ] Testes e2e
 
 ---

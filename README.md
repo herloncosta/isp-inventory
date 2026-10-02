@@ -13,6 +13,7 @@ Sistema de gestão e controle de estoque para provedores de internet (ISPs) de p
 - **Consultas e alertas** — saldo em tempo real por local e alerta de estoque mínimo
 - **Auditoria imutável** — toda movimentação registra usuário, timestamp, tipo e quantidade, e a confirmação sai como uma via impressa
 - **Gestão de usuários** — criar, editar e desativar; usuário nunca é excluído, porque o log de auditoria aponta para ele
+- **Gestão de locais** — criar, editar e excluir, com exclusão bloqueada enquanto houver saldo, equipamento ou histórico
 - **Feito para o carro** — interface desenhada para celular, sob sol, com uma mão só
 
 ## Regras de negócio
@@ -23,6 +24,7 @@ Sistema de gestão e controle de estoque para provedores de internet (ISPs) de p
 | RN-02 | Bloqueio de saldo negativo na origem (transação atômica)                 |
 | RN-03 | Ferramentas de alto valor rastreadas por comodato ao técnico             |
 | RN-04 | Usuário nunca é excluído: desativar tira o acesso e preserva o histórico |
+| RN-05 | Local só é excluído se estiver vazio, e a API diz o que impede           |
 
 ## Stack
 
