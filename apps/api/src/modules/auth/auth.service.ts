@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { randomUUID } from 'node:crypto';
 import * as bcrypt from 'bcryptjs';
@@ -6,6 +6,13 @@ import { PrismaService } from '../prisma.service.js';
 
 const ACCESS_TTL_SECONDS = 15 * 60;
 const REFRESH_TTL_SECONDS = 7 * 24 * 60 * 60;
+
+/**
+ * Hash de um valor descartável, no mesmo custo (10) dos hashes reais. Comparado
+ * contra ele quando o e-mail não existe, para que a resposta do login não diga,
+ * pelo tempo, se a conta existe.
+ */
+const DUMMY_HASH = '$2b$10$p7TjZnfQDOgKSJNymoC80eMoTpGoF5EXsiRA5xpWeD3gqkW39ZYEm';
 
 interface TokenPayload {
   sub: string;
@@ -20,6 +27,8 @@ interface TokenPayload {
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
@@ -27,11 +36,17 @@ export class AuthService {
 
   async login(email: string, password: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
-    if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
+    // O compare roda sempre, mesmo sem usuário na base: um e-mail inexistente
+    // respondendo mais rápido que uma senha errada deixava quem atacava
+    // descobrir contas medindo o tempo da resposta.
+    const passwordOk = await bcrypt.compare(password, user?.passwordHash ?? DUMMY_HASH);
+    if (!user || !passwordOk) {
+      this.warnDenied(email, user ? 'senha incorreta' : 'conta inexistente');
       throw new UnauthorizedException('Credenciais inválidas');
     }
     // Conta desativada não entra: a senha pode estar certa e o acesso negado.
     if (!user.active) {
+      this.warnDenied(email, 'conta desativada');
       throw new UnauthorizedException('Usuário desativado. Fale com o administrador.');
     }
     const tokens = await this.issuePair(user);
@@ -109,6 +124,15 @@ export class AuthService {
     const revoked = await this.prisma.revokedToken.findUnique({ where: { jti: payload.jti } });
     if (revoked) throw new UnauthorizedException('Token revogado');
     return payload;
+  }
+
+  /**
+   * Tentativa negada é a trilha que sobra quando alguém tenta enumerar contas
+   * ou reutilizar vazamento. O e-mail vem do corpo da requisição, então as
+   * quebras de linha saem: sem isso, um e-mail com `\n` forjaria uma linha.
+   */
+  private warnDenied(email: string, motivo: string) {
+    this.logger.warn(`login negado: ${email.replace(/[\r\n]+/g, ' ')} (${motivo})`);
   }
 
   private async revoke(jti: string, ttlSeconds: number) {
