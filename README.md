@@ -146,6 +146,8 @@ O backend tem 94 testes em 14 arquivos. O front **não tem runner de teste**: a 
 
 Login e refresh guardam access (15min) e refresh (7d) em **cookies httpOnly**, nenhum dos dois devolvido no corpo da resposta. O `GET /auth/me` devolve o usuário autenticado; o browser envia os cookies sozinho, então nenhum token é legível por JavaScript. Recarregar a página não gira o refresh token.
 
+O cookie de refresh vai em `path: /auth`, então ele só acompanha as chamadas de login, refresh e logout — o resto da API vê só o access. `COOKIE_SECURE` força o atributo `Secure` nos dois sentidos quando `NODE_ENV` não basta (proxy, túnel); vazio, ele segue o `NODE_ENV`.
+
 ## Workflow Git
 
 - `develop` — integração; toda feature parte daqui.

@@ -63,7 +63,26 @@ describe('AuthController (access e refresh em cookie httpOnly)', () => {
     expect(cookieFor(res, 'isp_refresh_token')).toMatchObject({
       maxAge: 7 * 24 * 60 * 60 * 1000,
       sameSite: 'lax',
+      // o refresh só vai para /auth; o access continua em toda a API
+      path: '/auth',
     });
+    expect(cookieFor(res, 'isp_access_token')).toMatchObject({ path: '/' });
+  });
+
+  it('COOKIE_SECURE força o atributo Secure sem depender de NODE_ENV', async () => {
+    serviceMock.login.mockResolvedValue({
+      accessToken: 'a',
+      refreshToken: 'r',
+      user: { id: 'u1' },
+    });
+    const res = mockRes();
+    process.env.COOKIE_SECURE = 'true';
+    try {
+      await makeController().login({ email: 'a@b.com', password: 'x' }, res);
+      expect(cookieFor(res, 'isp_access_token')).toMatchObject({ secure: true });
+    } finally {
+      delete process.env.COOKIE_SECURE;
+    }
   });
 
   it('me devolve o usuário autenticado sem tocar em token', () => {
@@ -122,6 +141,8 @@ describe('AuthController (access e refresh em cookie httpOnly)', () => {
 
     expect(serviceMock.logout).toHaveBeenCalledWith('access-jti', 'r');
     expect(res.clearCookie).toHaveBeenCalledWith('isp_access_token', { path: '/' });
+    expect(res.clearCookie).toHaveBeenCalledWith('isp_refresh_token', { path: '/auth' });
+    // e ainda varre o refresh antigo que vivia em path '/'
     expect(res.clearCookie).toHaveBeenCalledWith('isp_refresh_token', { path: '/' });
   });
 });
