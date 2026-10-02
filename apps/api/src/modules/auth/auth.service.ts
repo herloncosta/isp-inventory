@@ -14,6 +14,8 @@ interface TokenPayload {
   name: string;
   jti: string;
   typ: 'access' | 'refresh';
+  /** Versão do usuário quando o token nasceu; divergiu, a sessão já morreu. */
+  tv: number;
 }
 
 @Injectable()
@@ -48,6 +50,8 @@ export class AuthService {
     if (!user.active) {
       throw new UnauthorizedException('Usuário desativado. Fale com o administrador.');
     }
+    // Refresh antigo depois de trocar senha ou cargo não pode virar sessão nova.
+    if (payload.tv !== user.tokenVersion) throw new UnauthorizedException('Sessão expirada');
     const tokens = await this.issuePair(user);
     return {
       ...tokens,
@@ -67,8 +71,20 @@ export class AuthService {
     }
   }
 
-  private async issuePair(user: { id: string; email: string; role: string; name: string }) {
-    const base = { sub: user.id, email: user.email, role: user.role, name: user.name };
+  private async issuePair(user: {
+    id: string;
+    email: string;
+    role: string;
+    name: string;
+    tokenVersion: number;
+  }) {
+    const base = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+      name: user.name,
+      tv: user.tokenVersion,
+    };
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
         { ...base, jti: randomUUID(), typ: 'access' },

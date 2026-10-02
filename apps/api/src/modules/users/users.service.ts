@@ -59,7 +59,27 @@ export class UsersService {
    * com senha vazia não pode apagar o hash existente.
    */
   async update(id: string, dto: UpdateUserDto) {
-    await this.findOne(id);
+    const current = await this.prisma.user.findUnique({
+      where: { id },
+      select: { id: true, role: true, active: true },
+    });
+    if (!current) throw new NotFoundException('Usuário não encontrado');
+
+    // Rebaixar o último admin ativo trancava a porta: restaria ninguém para
+    // reativar contas ou promover outro administrador. `dto.role !== current.role`
+    // já cobre a troca para qualquer cargo que não seja ADMIN.
+    const demotesAdmin =
+      current.role === 'ADMIN' &&
+      current.active &&
+      dto.role !== undefined &&
+      dto.role !== current.role;
+    if (demotesAdmin) await this.assertNotLastActiveAdmin(id);
+
+    // Senha ou cargo novos sobem tokenVersion e derrubam as sessões abertas —
+    // inclusive a de quem fez a edição. A SPA manda pro login no 401 seguinte.
+    const rotatesSessions =
+      Boolean(dto.password) || (dto.role !== undefined && dto.role !== current.role);
+
     try {
       return await this.prisma.user.update({
         where: { id },
@@ -68,6 +88,7 @@ export class UsersService {
           ...(dto.email !== undefined && { email: dto.email }),
           ...(dto.role !== undefined && { role: dto.role }),
           ...(dto.password && { passwordHash: await bcrypt.hash(dto.password, 10) }),
+          ...(rotatesSessions && { tokenVersion: { increment: 1 } }),
         },
         select: safeSelect,
       });
@@ -75,6 +96,16 @@ export class UsersService {
       if (isUniqueViolation(e)) throw new ConflictException('E-mail já cadastrado');
       throw e;
     }
+  }
+
+  private async assertNotLastActiveAdmin(id: string) {
+    const others = await this.prisma.user.count({
+      where: { role: 'ADMIN', active: true, id: { not: id } },
+    });
+    if (others > 0) return;
+    throw new BadRequestException(
+      'Este é o único administrador ativo. Promova ou ative outro antes.',
+    );
   }
 
   /**
@@ -95,14 +126,7 @@ export class UsersService {
 
     // Não deixa o último administrador ativo ficar sem substituto
     if (current.role === 'ADMIN' && current.active && !active) {
-      const others = await this.prisma.user.count({
-        where: { role: 'ADMIN', active: true, id: { not: id } },
-      });
-      if (others === 0) {
-        throw new BadRequestException(
-          'Este é o único administrador ativo. Desative-o só depois de ativar outro.',
-        );
-      }
+      await this.assertNotLastActiveAdmin(id);
     }
 
     return this.prisma.user.update({

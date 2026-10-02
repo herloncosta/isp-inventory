@@ -32,9 +32,12 @@ export class JwtAuthGuard implements CanActivate {
       // Desativar precisa valer agora, e não só quando o token expira.
       const user = await this.prisma.user.findUnique({
         where: { id: payload.sub },
-        select: { active: true },
+        select: { active: true, tokenVersion: true },
       });
       if (!user?.active) throw new UnauthorizedException('Usuário desativado');
+      // Troca de senha/cargo sobe tokenVersion: a sessão antiga morre no ato,
+      // sem esperar os 15 minutos do access token vencer.
+      if (payload.tv !== user.tokenVersion) throw new UnauthorizedException('Sessão expirada');
       request.user = payload;
       return true;
     } catch (e) {

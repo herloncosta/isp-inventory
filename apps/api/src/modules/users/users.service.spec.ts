@@ -102,6 +102,40 @@ describe('UsersService.update (editar sem perder o resto)', () => {
       ConflictException,
     );
   });
+
+  it('rebaixar o cargo do único admin ativo é recusado', async () => {
+    prismaMock.user.findUnique.mockResolvedValue({ id: 'u1', role: 'ADMIN', active: true });
+    prismaMock.user.count.mockResolvedValue(0);
+
+    await expect(makeService().update('u1', { role: 'ESTOQUISTA' })).rejects.toThrow(
+      BadRequestException,
+    );
+    expect(prismaMock.user.update).not.toHaveBeenCalled();
+  });
+
+  it('rebaixar admin passa quando existe outro admin ativo', async () => {
+    prismaMock.user.findUnique.mockResolvedValue({ id: 'u1', role: 'ADMIN', active: true });
+    prismaMock.user.count.mockResolvedValue(1);
+
+    await expect(makeService().update('u1', { role: 'ESTOQUISTA' })).resolves.toBeDefined();
+    expect(prismaMock.user.update.mock.calls[0][0].data.role).toBe('ESTOQUISTA');
+  });
+
+  it('troca de senha gira tokenVersion, derrubando as sessões abertas', async () => {
+    await makeService().update('u1', { password: 'novaSenha1' });
+    expect(prismaMock.user.update.mock.calls[0][0].data.tokenVersion).toEqual({ increment: 1 });
+  });
+
+  it('troca de cargo também gira tokenVersion', async () => {
+    prismaMock.user.findUnique.mockResolvedValue({ id: 'u1', role: 'ESTOQUISTA', active: true });
+    await makeService().update('u1', { role: 'ADMIN' });
+    expect(prismaMock.user.update.mock.calls[0][0].data.tokenVersion).toEqual({ increment: 1 });
+  });
+
+  it('editar sem senha e sem cargo mantém as sessões vivas', async () => {
+    await makeService().update('u1', { name: 'Novo nome' });
+    expect(prismaMock.user.update.mock.calls[0][0].data).not.toHaveProperty('tokenVersion');
+  });
 });
 
 describe('UsersService.setStatus (desativar, nunca excluir)', () => {

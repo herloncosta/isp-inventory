@@ -19,6 +19,7 @@ const storedUser = {
   email: 'admin@isp.com',
   role: 'ADMIN',
   active: true,
+  tokenVersion: 0,
 };
 
 describe('AuthService.login (RF-001)', () => {
@@ -41,7 +42,7 @@ describe('AuthService.login (RF-001)', () => {
   });
 
   it('refresh de conta desativada não emite token novo', async () => {
-    jwtMock.verifyAsync.mockResolvedValue({ sub: 'u1', typ: 'refresh', jti: 'j1' });
+    jwtMock.verifyAsync.mockResolvedValue({ sub: 'u1', typ: 'refresh', jti: 'j1', tv: 0 });
     prismaMock.revokedToken.findUnique.mockResolvedValue(null);
     prismaMock.user.findUnique.mockResolvedValue({ ...storedUser, active: false });
 
@@ -93,7 +94,7 @@ describe('AuthService.refresh (rotação)', () => {
   });
 
   it('revoga o refresh usado e emite novo par', async () => {
-    jwtMock.verifyAsync.mockResolvedValue({ sub: 'u1', typ: 'refresh', jti: 'old-jti' });
+    jwtMock.verifyAsync.mockResolvedValue({ sub: 'u1', typ: 'refresh', jti: 'old-jti', tv: 0 });
     prismaMock.revokedToken.findUnique.mockResolvedValue(null);
     prismaMock.user.findUnique.mockResolvedValue({
       ...storedUser,
@@ -110,8 +111,17 @@ describe('AuthService.refresh (rotação)', () => {
     expect(result.refreshToken).toBe('refresh2');
   });
 
+  it('rejeita refresh emitido antes da troca de senha ou cargo', async () => {
+    jwtMock.verifyAsync.mockResolvedValue({ sub: 'u1', typ: 'refresh', jti: 'old-jti', tv: 0 });
+    prismaMock.revokedToken.findUnique.mockResolvedValue(null);
+    prismaMock.user.findUnique.mockResolvedValue({ ...storedUser, tokenVersion: 1 });
+
+    await expect(makeService().refresh('old-refresh')).rejects.toThrow(/Sessão expirada/);
+    expect(jwtMock.signAsync).not.toHaveBeenCalled();
+  });
+
   it('rejeita refresh já utilizado (revogado)', async () => {
-    jwtMock.verifyAsync.mockResolvedValue({ sub: 'u1', typ: 'refresh', jti: 'used-jti' });
+    jwtMock.verifyAsync.mockResolvedValue({ sub: 'u1', typ: 'refresh', jti: 'used-jti', tv: 0 });
     prismaMock.revokedToken.findUnique.mockResolvedValue({ jti: 'used-jti' });
     await expect(makeService().refresh('used-refresh')).rejects.toThrow(UnauthorizedException);
     expect(jwtMock.signAsync).not.toHaveBeenCalled();
