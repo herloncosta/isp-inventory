@@ -1,7 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { MovementType, SerialStatus } from '@isp/shared';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { MovementType, Role, SerialStatus } from '@isp/shared';
 import { PrismaService } from '../prisma.service.js';
 import { CreateIssueDto, CreateReturnDto, CreateTransferDto } from './dto.js';
+
+/** Quem assina a movimentação: o papel decide o que pode ser debitado. */
+type Actor = { createdBy: string; role: Role };
 
 interface Tx {
   stockBalance: {
@@ -24,7 +27,7 @@ interface Tx {
 export class MovementsService {
   constructor(private prisma: PrismaService) {}
 
-  async transfer(dto: CreateTransferDto & { createdBy: string }) {
+  async transfer(dto: CreateTransferDto & Actor) {
     if (dto.sourceLocationId === dto.targetLocationId) {
       throw new BadRequestException('Origem e destino devem ser diferentes');
     }
@@ -52,7 +55,8 @@ export class MovementsService {
     });
   }
 
-  async issue(dto: CreateIssueDto & { createdBy: string }) {
+  async issue(dto: CreateIssueDto & Actor) {
+    await this.assertOwnVehicleSource(dto);
     this.checkSerialCount(dto.quantity, dto.serialNumbers);
     return this.prisma.$transaction(async (tx) => {
       await this.debit(tx as unknown as Tx, dto.sourceLocationId, dto.productId, dto.quantity);
@@ -77,7 +81,8 @@ export class MovementsService {
     });
   }
 
-  async return(dto: CreateReturnDto & { createdBy: string }) {
+  async return(dto: CreateReturnDto & Actor) {
+    await this.assertOwnVehicleSource(dto);
     if (dto.sourceLocationId === dto.targetLocationId) {
       throw new BadRequestException('Origem e destino devem ser diferentes');
     }
@@ -103,6 +108,18 @@ export class MovementsService {
         },
       });
     });
+  }
+
+  /**
+   * Técnico só opera no estoque do próprio veículo. Sem esta trava um login de
+   * campo debitava da Central ou do carro de outro técnico (RF-002).
+   */
+  private async assertOwnVehicleSource(dto: Actor & { sourceLocationId: string }) {
+    if (dto.role !== Role.TECNICO) return;
+    const own = await this.prisma.technicianLocationId(dto.createdBy);
+    if (!own || own !== dto.sourceLocationId) {
+      throw new ForbiddenException('Técnico só movimenta o estoque do próprio veículo');
+    }
   }
 
   private checkSerialCount(quantity: number, serials?: string[]) {

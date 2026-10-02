@@ -1,5 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Role } from '@isp/shared';
 import { PrismaService } from '../prisma.service.js';
+
+/** Quem está perguntando: o escopo do TECNICO sai daqui, nunca da query string. */
+type Viewer = { sub: string; role: string };
 
 @Injectable()
 export class StockService {
@@ -13,27 +17,35 @@ export class StockService {
   }
 
   async getMyBalances(userId: string) {
-    const tech = await this.prisma.technician.findUnique({
-      where: { userId },
-      include: { vehicle: { include: { location: true } } },
-    });
-    const locationId = tech?.vehicle?.location?.id;
+    const locationId = await this.prisma.technicianLocationId(userId);
     if (!locationId) throw new NotFoundException('Técnico sem veículo ou local vinculado');
     return this.getBalances(locationId);
   }
 
-  async getMovements(filters?: {
-    locationId?: string;
-    productId?: string;
-    osNumber?: string;
-    type?: string;
-    from?: string;
-    to?: string;
-  }) {
+  async getMovements(
+    viewer: Viewer,
+    filters?: {
+      locationId?: string;
+      productId?: string;
+      osNumber?: string;
+      type?: string;
+      from?: string;
+      to?: string;
+    },
+  ) {
+    let locationId = filters?.locationId;
+    if (viewer.role === Role.TECNICO) {
+      const own = await this.prisma.technicianLocationId(viewer.sub);
+      // Técnico sem veículo próprio não tem histórico a ver — e, principalmente,
+      // não pode cair num filtro sem local e ler o movimento da empresa inteira.
+      if (!own) return [];
+      locationId = own;
+    }
+
     return this.prisma.stockMovement.findMany({
       where: {
-        ...(filters?.locationId && {
-          OR: [{ sourceLocationId: filters.locationId }, { targetLocationId: filters.locationId }],
+        ...(locationId && {
+          OR: [{ sourceLocationId: locationId }, { targetLocationId: locationId }],
         }),
         ...(filters?.productId && { productId: filters.productId }),
         ...(filters?.osNumber && { osNumber: filters.osNumber }),

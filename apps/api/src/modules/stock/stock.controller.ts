@@ -12,12 +12,14 @@ export class StockController {
   constructor(private stockService: StockService) {}
 
   @Get('balances')
+  @Roles(Role.ADMIN, Role.ESTOQUISTA)
   getBalances(@Query('locationId') locationId?: string) {
     return this.stockService.getBalances(locationId);
   }
 
   @Get('movements')
   getMovements(
+    @CurrentUser() viewer: { sub: string; role: string },
     @Query('locationId') locationId?: string,
     @Query('productId') productId?: string,
     @Query('osNumber') osNumber?: string,
@@ -25,7 +27,14 @@ export class StockController {
     @Query('from') from?: string,
     @Query('to') to?: string,
   ) {
-    return this.stockService.getMovements({ locationId, productId, osNumber, type, from, to });
+    return this.stockService.getMovements(viewer, {
+      locationId,
+      productId,
+      osNumber,
+      type,
+      from,
+      to,
+    });
   }
 
   @Get('my-balances')
@@ -35,6 +44,7 @@ export class StockController {
   }
 
   @Get('serials')
+  @Roles(Role.ADMIN, Role.ESTOQUISTA)
   getSerials(
     @Query('locationId') locationId?: string,
     @Query('status') status?: string,

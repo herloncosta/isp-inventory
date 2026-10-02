@@ -27,7 +27,6 @@ export default function MovementsPage() {
   const { data: rawLocations } = useList<Record<string, unknown>>('locations', '/locations');
   const { data: rawSuppliers } = useList<Record<string, unknown>>('suppliers', '/suppliers');
   const products = toOptions(rawProducts);
-  const locations = toOptions(rawLocations);
   const suppliers = toOptions(rawSuppliers);
 
   const balanceEndpoint = user?.role === Role.TECNICO ? '/stock/my-balances' : '/stock/balances';
@@ -44,6 +43,12 @@ export default function MovementsPage() {
     : loadingBalances
       ? 'carregando'
       : 'pronto';
+
+  // TECNICO só enxerga o próprio veículo (a API recusa a Central com 403):
+  // oferecer os outros locais no select "sai do local" seria um erro de fábrica.
+  const locations = toOptions(rawLocations).filter(
+    (l) => isStaff || (balances ?? []).some((b) => b.locationId === l.id),
+  );
 
   const productName = (id: string) => products.find((p) => p.id === id)?.name ?? '—';
   const locationName = (id: string) => locations.find((l) => l.id === id)?.name ?? '—';
