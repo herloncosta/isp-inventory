@@ -26,5 +26,11 @@
   "engines": {
     "node": ">=22.18.0"
   },
-  "packageManager": "pnpm@10.0.0"
+  "packageManager": "pnpm@10.0.0",
+  "pnpm": {
+    "overrides": {
+      "mysql2": "^3.24.5",
+      "deepmerge-ts": "^8.0.2"
+    }
+  }
 }

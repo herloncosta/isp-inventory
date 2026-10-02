@@ -131,7 +131,7 @@ isp-inventory/
 
 ### Fase 9 — Qualidade & CI
 
-- [x] Testes unitários backend (Vitest, 94 testes / 14 arquivos)
+- [x] Testes unitários backend (Vitest, 113 testes / 15 arquivos)
 - [x] CI (GitHub Actions: prettier + testes API + build web)
 - [ ] Testes e2e
 
@@ -181,7 +181,7 @@ Auditoria de código de 2026-10-02. Cada item é implementado em um commit próp
 
 - [x] **S13** `take` nas listagens (`balances`, `serials`) + CNPJ com formato `\d{14}`
 - [x] **S14** Infra dev amarrada em `127.0.0.1` (Postgres no compose, host do Vite)
-- [ ] **S15** CI com gate `pnpm audit --prod` e dependências vulneráveis atualizadas
+- [x] **S15** CI com gate `pnpm audit --prod` e dependências vulneráveis atualizadas
 
 ## Regras de Negócio
 

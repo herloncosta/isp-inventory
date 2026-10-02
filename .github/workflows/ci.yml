@@ -19,6 +19,8 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # gate: pacote com CVE conhecida em dependência de produção derruba o build
+      - run: pnpm audit --prod
       - run: pnpm lint
       - run: pnpm --filter api test
       - run: pnpm --filter web build
