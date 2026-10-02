@@ -175,7 +175,7 @@ Auditoria de código de 2026-10-02. Cada item é implementado em um commit próp
 - [x] **S9** Cookie de refresh com `path: '/auth'` (não viaja em toda requisição) e `secure` não dependente só de `NODE_ENV`
 - [x] **S10** Login com timing uniforme (hash dummy quando o usuário não existe) + log de tentativa negada
 - [x] **S11** `ValidationPipe` com `forbidNonWhitelisted` e `@Param('id')` validado como UUID (P2023 deixa de virar 500)
-- [ ] **S12** Política de senha: `MinLength(8)`
+- [x] **S12** Política de senha: `MinLength(8)`
 
 ### Baixo
 
