@@ -12,15 +12,17 @@ Sistema de gestão e controle de estoque para provedores de internet (ISPs) de p
 - **Movimentações** — transferência Central → veículo, baixa em OS, devolução com status
 - **Consultas e alertas** — saldo em tempo real por local e alerta de estoque mínimo
 - **Auditoria imutável** — toda movimentação registra usuário, timestamp, tipo e quantidade, e a confirmação sai como uma via impressa
+- **Gestão de usuários** — criar, editar e desativar; usuário nunca é excluído, porque o log de auditoria aponta para ele
 - **Feito para o carro** — interface desenhada para celular, sob sol, com uma mão só
 
 ## Regras de negócio
 
-| Regra | Descrição                                                    |
-| ----- | ------------------------------------------------------------ |
-| RN-01 | Unicidade de número de série e endereço MAC                  |
-| RN-02 | Bloqueio de saldo negativo na origem (transação atômica)     |
-| RN-03 | Ferramentas de alto valor rastreadas por comodato ao técnico |
+| Regra | Descrição                                                                |
+| ----- | ------------------------------------------------------------------------ |
+| RN-01 | Unicidade de número de série e endereço MAC                              |
+| RN-02 | Bloqueio de saldo negativo na origem (transação atômica)                 |
+| RN-03 | Ferramentas de alto valor rastreadas por comodato ao técnico             |
+| RN-04 | Usuário nunca é excluído: desativar tira o acesso e preserva o histórico |
 
 ## Stack
 

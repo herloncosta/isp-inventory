@@ -79,7 +79,7 @@ Prover um sistema simples, performático e confiável para gerenciamento de insu
 ## 4. Modelo de Dados Relacional (PostgreSQL)
 
 ```
-[Users] (id, name, email, password_hash, role, created_at)
+[Users] (id, name, email, password_hash, role, active, deactivated_at, created_at)
   │
   ├───< [StockLocations] (id, name, type: CENTRAL/VEHICLE, responsible_user_id)
   │         │
@@ -94,24 +94,25 @@ Prover um sistema simples, performático e confiável para gerenciamento de insu
 
 ### Tabelas
 
-| Tabela            | Campos                                                                                         | Descrição                              |
-| ----------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------- |
-| `users`           | id, name, email, password_hash, role, created_at                                               | Usuários do sistema (3 perfis)         |
-| `stock_locations` | id, name, type, responsible_user_id                                                            | Locais de estoque (Central ou Veículo) |
-| `stock_balances`  | id, location_id, product_id, quantity                                                          | Saldo por local + produto              |
-| `stock_movements` | id, source_location_id, target_location_id, product_id, qty, os_number, created_by, created_at | Auditoria imutável de movimentações    |
-| `products`        | id, name, sku, category, unit, min_stock                                                       | Cadastro de materiais                  |
-| `serial_items`    | id, product_id, serial_number, mac_address, current_location_id, status                        | Rastreamento individual de ativos      |
+| Tabela            | Campos                                                                                         | Descrição                                            |
+| ----------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| `users`           | id, name, email, password_hash, role, active, deactivated_at, created_at                       | Usuários do sistema (3 perfis); desativado não entra |
+| `stock_locations` | id, name, type, responsible_user_id                                                            | Locais de estoque (Central ou Veículo)               |
+| `stock_balances`  | id, location_id, product_id, quantity                                                          | Saldo por local + produto                            |
+| `stock_movements` | id, source_location_id, target_location_id, product_id, qty, os_number, created_by, created_at | Auditoria imutável de movimentações                  |
+| `products`        | id, name, sku, category, unit, min_stock                                                       | Cadastro de materiais                                |
+| `serial_items`    | id, product_id, serial_number, mac_address, current_location_id, status                        | Rastreamento individual de ativos                    |
 
 ---
 
 ## 5. Regras de Negócio (RN)
 
-| ID    | Regra                                                                                                                                                                                       | Implementação                                                                            |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| RN-01 | **Unicidade de Ativos**: Não é permitido o cadastro de dois equipamentos com o mesmo Número de Série ou Endereço MAC no sistema.                                                            | `@@unique([serial_number])`, `@@unique([mac_address])` no Prisma + validação no service. |
-| RN-02 | **Bloqueio de Saldo Negativo**: Não é permitida a transferência ou baixa de um volume superior ao saldo disponível no local de origem.                                                      | Transação atômica: check saldo → debita source → credita target.                         |
-| RN-03 | **Rastreabilidade de Ferramentas**: Ferramentas de alto valor (ex: Máquina de Fusão) são tratadas como ativos rastreáveis vinculadas ao técnico responsável sob regime de comodato interno. | Ferramentas de alto valor ganham `SerialItem` vinculado ao técnico.                      |
+| ID    | Regra                                                                                                                                                                                       | Implementação                                                                                                                                                                           |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| RN-01 | **Unicidade de Ativos**: Não é permitido o cadastro de dois equipamentos com o mesmo Número de Série ou Endereço MAC no sistema.                                                            | `@@unique([serial_number])`, `@@unique([mac_address])` no Prisma + validação no service.                                                                                                |
+| RN-02 | **Bloqueio de Saldo Negativo**: Não é permitida a transferência ou baixa de um volume superior ao saldo disponível no local de origem.                                                      | Transação atômica: check saldo → debita source → credita target.                                                                                                                        |
+| RN-03 | **Rastreabilidade de Ferramentas**: Ferramentas de alto valor (ex: Máquina de Fusão) são tratadas como ativos rastreáveis vinculadas ao técnico responsável sob regime de comodato interno. | Ferramentas de alto valor ganham `SerialItem` vinculado ao técnico.                                                                                                                     |
+| RN-04 | **Usuário não é excluído**: a auditoria é imutável e aponta para o usuário, então apagar a linha quebraria a proveniência dos lançamentos.                                                  | Não existe `DELETE /users`. Desativar grava `active=false` + `deactivated_at`; login, refresh e guard recusam conta desativada. Admin não desativa a si mesmo nem o último admin ativo. |
 
 ---
 
@@ -136,7 +137,7 @@ Prover um sistema simples, performático e confiável para gerenciamento de insu
 - [x] Docker Compose (PostgreSQL)
 - [x] Schema Prisma (7 tabelas, incl. `revoked_tokens`)
 - [x] Módulo Auth (login, refresh com rotação, logout, guards RBAC + revogação)
-- [x] Módulo Users (CRUD mínimo ADMIN-only)
+- [x] Módulo Users (criar, editar, desativar/reativar — sem exclusão, RN-04; 15 testes)
 - [x] Frontend sem token em JS: access e refresh em cookie httpOnly, sessão restaurada por `GET /auth/me` (retry via refresh sobrevive ao reload)
 - [x] Módulo Products (CRUD)
 - [x] Módulo Technicians (CRUD)
@@ -160,6 +161,7 @@ Prover um sistema simples, performático e confiável para gerenciamento de insu
 
 ### Pendente
 
+- [x] Gestão de usuários: criar, editar, desativar/reativar (RF-014, RN-04) — exclusão proibida por auditoria
 - [ ] Testes e2e
 
 ---

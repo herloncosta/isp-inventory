@@ -18,11 +18,35 @@ const storedUser = {
   name: 'Admin',
   email: 'admin@isp.com',
   role: 'ADMIN',
+  active: true,
 };
 
 describe('AuthService.login (RF-001)', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+  });
+
+  it('recusa login de usuário desativado, mesmo com a senha certa', async () => {
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: 'u1',
+      email: 'tec@isp.com',
+      name: 'Técnico',
+      role: 'TECNICO',
+      passwordHash: await bcrypt.hash('admin123', 10),
+      active: false,
+    });
+
+    await expect(makeService().login('tec@isp.com', 'admin123')).rejects.toThrow(/desativado/i);
+    expect(jwtMock.signAsync).not.toHaveBeenCalled();
+  });
+
+  it('refresh de conta desativada não emite token novo', async () => {
+    jwtMock.verifyAsync.mockResolvedValue({ sub: 'u1', typ: 'refresh', jti: 'j1' });
+    prismaMock.revokedToken.findUnique.mockResolvedValue(null);
+    prismaMock.user.findUnique.mockResolvedValue({ ...storedUser, active: false });
+
+    await expect(makeService().refresh('refresh-valido')).rejects.toThrow(/desativado/i);
+    expect(jwtMock.signAsync).not.toHaveBeenCalled();
   });
 
   it('retorna par de tokens e usuário com credenciais válidas', async () => {
@@ -36,7 +60,13 @@ describe('AuthService.login (RF-001)', () => {
 
     expect(result.accessToken).toBe('access');
     expect(result.refreshToken).toBe('refresh');
-    expect(result.user).toEqual(storedUser);
+    // a resposta traz só campos seguros: `active` e `passwordHash` ficam de fora
+    expect(result.user).toEqual({
+      id: 'u1',
+      name: 'Admin',
+      email: 'admin@isp.com',
+      role: 'ADMIN',
+    });
   });
 
   it('rejeita e-mail desconhecido', async () => {

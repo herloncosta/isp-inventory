@@ -8,12 +8,15 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  name         String
-  email        String   @unique
-  passwordHash String
-  role         String
-  createdAt    DateTime @default(now()) @map("created_at")
+  id            String    @id @default(uuid())
+  name          String
+  email         String    @unique
+  passwordHash  String
+  role          String
+  // Usuário nunca é excluído: o histórico de auditoria aponta para ele.
+  active        Boolean   @default(true)
+  deactivatedAt DateTime? @map("deactivated_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
 
   @@map("users")
 }

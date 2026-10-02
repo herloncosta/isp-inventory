@@ -1,9 +1,27 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma.service.js';
-import { CreateUserDto } from './dto.js';
+import { CreateUserDto, UpdateUserDto } from './dto.js';
 
-const safeSelect = { id: true, name: true, email: true, role: true, createdAt: true };
+const safeSelect = {
+  id: true,
+  name: true,
+  email: true,
+  role: true,
+  active: true,
+  deactivatedAt: true,
+  createdAt: true,
+};
+
+/** Erro de e-mail duplicado do Prisma (P2002) → 409. */
+function isUniqueViolation(e: unknown): boolean {
+  return typeof e === 'object' && e !== null && 'code' in e && e.code === 'P2002';
+}
 
 @Injectable()
 export class UsersService {
@@ -31,10 +49,66 @@ export class UsersService {
         select: safeSelect,
       });
     } catch (e) {
-      if (typeof e === 'object' && e !== null && 'code' in e && e.code === 'P2002') {
-        throw new ConflictException('E-mail já cadastrado');
-      }
+      if (isUniqueViolation(e)) throw new ConflictException('E-mail já cadastrado');
       throw e;
     }
+  }
+
+  /**
+   * Edição de campos. A senha só é trocada quando vem preenchida — um PATCH
+   * com senha vazia não pode apagar o hash existente.
+   */
+  async update(id: string, dto: UpdateUserDto) {
+    await this.findOne(id);
+    try {
+      return await this.prisma.user.update({
+        where: { id },
+        data: {
+          ...(dto.name !== undefined && { name: dto.name }),
+          ...(dto.email !== undefined && { email: dto.email }),
+          ...(dto.role !== undefined && { role: dto.role }),
+          ...(dto.password && { passwordHash: await bcrypt.hash(dto.password, 10) }),
+        },
+        select: safeSelect,
+      });
+    } catch (e) {
+      if (isUniqueViolation(e)) throw new ConflictException('E-mail já cadastrado');
+      throw e;
+    }
+  }
+
+  /**
+   * Desativa (ou reativa) sem apagar a linha: o histórico de auditoria aponta
+   * para o usuário, então excluí-lo quebraria a proveniência dos lançamentos.
+   */
+  async setStatus(id: string, active: boolean, actingUserId: string) {
+    if (!active && id === actingUserId) {
+      throw new BadRequestException(
+        'Você não pode desativar a própria conta: ficaria sem ninguém para reativá-la.',
+      );
+    }
+    const current = await this.prisma.user.findUnique({
+      where: { id },
+      select: { id: true, role: true, active: true },
+    });
+    if (!current) throw new NotFoundException('Usuário não encontrado');
+
+    // Não deixa o último administrador ativo ficar sem substituto
+    if (current.role === 'ADMIN' && current.active && !active) {
+      const others = await this.prisma.user.count({
+        where: { role: 'ADMIN', active: true, id: { not: id } },
+      });
+      if (others === 0) {
+        throw new BadRequestException(
+          'Este é o único administrador ativo. Desative-o só depois de ativar outro.',
+        );
+      }
+    }
+
+    return this.prisma.user.update({
+      where: { id },
+      data: { active, deactivatedAt: active ? null : new Date() },
+      select: safeSelect,
+    });
   }
 }
